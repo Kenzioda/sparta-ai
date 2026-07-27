@@ -1,0 +1,60 @@
+{
+  "version": "1.0.0",
+  "tiers": {
+    "master": {
+      "level": 0,
+      "label": "Master",
+      "description": "Highest-intelligence model. Chosen by user. Handles decomposition, verification, and synthesis.",
+      "visible": true,
+      "default_model_policy": "user_chosen",
+      "cross_validation": true,
+      "confidence_threshold": 0.7
+    },
+    "senior_helper": {
+      "level": 1,
+      "label": "Senior Helper",
+      "description": "Mid-tier model. Handles analysis, complex sub-tasks, code review.",
+      "visible": false,
+      "cross_validation": false,
+      "confidence_threshold": 0.6
+    },
+    "junior_helper": {
+      "level": 2,
+      "label": "Junior Helper",
+      "description": "Budget model. Handles search, grep, file operations, simple edits.",
+      "visible": false,
+      "cross_validation": false,
+      "confidence_threshold": 0.5
+    }
+  },
+  "tier_to_helper_assignment": {
+    "senior_helper": {
+      "max_tokens_in": 32768,
+      "max_tokens_out": 8192,
+      "timeout_ms": 60000
+    },
+    "junior_helper": {
+      "max_tokens_in": 8192,
+      "max_tokens_out": 4096,
+      "timeout_ms": 30000
+    }
+  },
+  "complexity_thresholds": {
+    "simple_max_tokens": 5000,
+    "medium_max_tokens": 20000,
+    "simple_direct": true,
+    "medium_helpers": 3,
+    "complex_helpers": 9
+  },
+  "cross_validation_rules": {
+    "enabled": true,
+    "critical_task_patterns": ["security", "auth", "password", "token", "secret", "key", "encrypt", "payment", "financial", "legal"],
+    "confidence_divergence_threshold": 0.3
+  },
+  "recovery": {
+    "on_token_exhaustion": "return_partial",
+    "on_timeout": "retry_other_helper",
+    "on_ambiguity": "master_review",
+    "max_retries_per_subtask": 2
+  }
+}

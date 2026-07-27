@@ -1,0 +1,13 @@
+{
+  "command": "package_manager",
+  "detect": ["npm install", "npm i ", "npm ci", "bun install", "bun add", "bun remove", "pnpm install", "pnpm add", "yarn add", "yarn install", "npx "],
+  "dropLines": ["^\\s+$", "npm notice", "npm WARN.*deprecated", "added \\d+ package", "removed \\d+ package", "changed \\d+ package", "up to date", "already exists", "node_modules/"],
+  "collapseLines": ["^npm (WARN|ERR|NOTICE)", "^bun (warn|error)"],
+  "includeLines": ["error:", "Error:", "ERR", "FAIL", "ENOENT", "EACCES", "EPERM", "version", "found \\d+", "vulnerabilit", "high severity", "critical"],
+  "deduplicate": true,
+  "dedupThreshold": 4,
+  "maxLines": 60,
+  "headLines": 15,
+  "tailLines": 15,
+  "priorityPatterns": ["error:", "Error:", "ERR!", "ENOENT", "EACCES", "EPERM", "vulnerability"]
+}

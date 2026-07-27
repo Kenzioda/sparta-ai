@@ -1,0 +1,13 @@
+{
+  "command": "build",
+  "detect": ["error:", "warning:", "build", "compil", "tsc:", "bun run build", "npm run build", "webpack", "vite", "esbuild", "babel"],
+  "dropLines": ["^\\s+at\\s+", "node_modules/", "internal/modules/", "webpack/bootstrap"],
+  "collapseLines": ["^\\s+#\\s+", "^\\s+at\\s+"],
+  "includeLines": ["error:", "Error:", "warning:", "Warning:", "FAIL", "TS[0-9]+", "Cannot find", "Module not found", "SyntaxError", "TypeError", "ReferenceError"],
+  "deduplicate": true,
+  "dedupThreshold": 3,
+  "maxLines": 80,
+  "headLines": 20,
+  "tailLines": 20,
+  "priorityPatterns": ["error:", "Error:", "FAIL", "TS[0-9]+", "Cannot find", "Module not found"]
+}

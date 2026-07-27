@@ -1,0 +1,13 @@
+{
+  "command": "docker",
+  "detect": ["docker ", "docker-compose", "dockerfile", "container", "image:", "buildx", "compose "],
+  "dropLines": ["^\\s*$", "Step \\d+/\\d+", "^\\[\\d+\\]" , "\\[internal\\]", "load build context", "\\[build stage"],
+  "collapseLines": ["^Step \\d+/\\d+", "^\\[\\d+\\]", "^\\s*---\\>", "^\\s*--->"],
+  "includeLines": ["error:", "Error:", "failed", "FAILED", "not found", "Cannot connect", "port is already", "conflict", "unable to"],
+  "deduplicate": true,
+  "dedupThreshold": 3,
+  "maxLines": 80,
+  "headLines": 15,
+  "tailLines": 15,
+  "priorityPatterns": ["error:", "Error:", "failed", "FAILED", "Cannot connect", "conflict"]
+}

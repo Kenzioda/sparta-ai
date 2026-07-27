@@ -1,0 +1,13 @@
+{
+  "command": "generic",
+  "detect": [],
+  "dropLines": ["^\\s*$", "^-+$", "^=+$", "^\\*+$", "^_+$"],
+  "collapseLines": ["^\\s*$", "^-+$"],
+  "includeLines": [],
+  "deduplicate": true,
+  "dedupThreshold": 4,
+  "maxLines": 120,
+  "headLines": 20,
+  "tailLines": 20,
+  "priorityPatterns": ["error:", "Error:", "warning:", "Warning:", "fail", "success"]
+}

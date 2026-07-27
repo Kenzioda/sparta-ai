@@ -1,0 +1,13 @@
+{
+  "command": "stacktrace",
+  "detect": ["at ", "Error:", "TypeError:", "ReferenceError:", "SyntaxError:", "RangeError:", "URIError:", "stack:", "traceback", "Traceback", "File \"", "line \\d+", "in <module>"],
+  "dropLines": ["^\\s+at\\s+(node_modules|webpack|internal)", "^\\s+\\.\\.\\.$"],
+  "collapseLines": ["^\\s+at\\s+", "^\\s+File \"", "^\\s+--- "],
+  "includeLines": ["Error:", "TypeError:", "ReferenceError:", "SyntaxError:", "RangeError:", "at\\s+(?!node_modules)"],
+  "deduplicate": false,
+  "dedupThreshold": 5,
+  "maxLines": 60,
+  "headLines": 10,
+  "tailLines": 20,
+  "priorityPatterns": ["Error:", "TypeError:", "ReferenceError:", "SyntaxError:"]
+}
