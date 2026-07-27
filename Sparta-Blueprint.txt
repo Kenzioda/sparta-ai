@@ -4,153 +4,92 @@ Super Personal Assistant for Real-time Tactical & Autonomous
 
 1. SYSTEM OVERVIEW
 ------------------
-S.P.A.R.T.A is a hierarchical multi-agent system built on top of the
-opencode engine. It extends opencode's agent capabilities with a
-tactical command structure, domain-expert skills database, and
-safety-governed deployment framework.
+S.P.A.R.T.A is a hierarchical multi-agent system built on the opencode
+engine. It extends opencode with a tactical command structure, domain-
+expert skills database, and safety-governed deployment framework.
 
 2. REPOSITORY STRUCTURE
 -----------------------
-sparta-ai/                          # Public repo root
+sparta-ai/                          # Public repo
   .opencode/
-    model_tiers.json                 # Master/Senior/Junior model config
-    opencode.jsonc                   # opencode configuration (sparta-local paths)
-  packages/
-    opencode/src/
-      agent/sparta.txt              # Master agent system prompt
-      compression/                  # Context compression pipeline
-        command-detector.ts
-        deduplicator.ts
-        pipeline.ts
-        preservation.ts
-        prose-engine.ts
-        prose-rules.ts
-        service.ts
-        smart-truncate.ts
-        validation-gate.ts
-        filters/                    # Compression rule sets (docker, git, etc.)
-      sandbox/                      # Process isolation layer
-        egress.ts, manager.ts, ring.ts, vault.ts
-      tool/
-        hierarchy-delegate.ts       # Multi-tier task delegation
-        stealth-browser.ts          # Anti-detection browser automation
-        sandbox.ts                  # Sandbox management tool
-        signin.ts                   # Authentication helper
-    core/src/plugin/agent/sparta.ts # Agent plugin registration
-    tui/src/theme/assets/sparta.json    # Terminal theme
-    ui/src/theme/themes/sparta.json     # Desktop theme
+    agent/sparta.md                 # Sparta agent definition (markdown + frontmatter)
+    model_tiers.json                # Master/Senior/Junior model config
+    opencode.jsonc                  # opencode config (default_agent: sparta)
+  themes/
+    tui/sparta.json                 # Terminal UI theme
+    ui/sparta.json                  # Desktop UI theme
   skills/sparta/SKILL.md            # Skills overview
   specs/storage/
     SPARTA.md                       # Full identity & operating manual
     SPARTA-SKILLS.md                # 376-skill domain library (41 faculties)
-  Manual-Instructions.txt           # This file
-  Sparta-Blueprint.txt              # This file
-  package.json                      # Public release metadata
-  AGENTS.md                         # Development conventions
+  src/reference/                    # Reference source code from the engine
+    agent/sparta.txt                # Original agent prompt
+    compression/                    # Context compression pipeline
+    sandbox/                        # Process isolation layer
+    tool/                           # Sparta-specific tools
+    plugin/agent/sparta.ts          # Agent plugin registration
+  bin/sparta                        # CLI wrapper (npm installation)
+  scripts/
+    installer-win.ps1               # Windows installer with desktop shortcut
+    installer-win.iss               # Inno Setup script for .exe installer
+    installer-mac.sh                # macOS installer
+    installer-linux.sh              # Linux installer
+    install-web.ps1                 # Web installer (PowerShell)
+    install-web.sh                  # Web installer (shell)
+    sparta-runner.bat               # Windows wrapper batch file
+  .github/workflows/
+    build-and-release.yml           # CI: builds from private repo, publishes
 
-3. ARCHITECTURAL LAYERS
-------------------------
-  Layer 1: Identity & Governance (SPARTA.md, SPARTA-SKILLS.md)
-    - Core values, operating principles, security protocols
-    - Faculty-driven risk model (41 faculties, 5 risk levels)
-    - Auto-update system for new domains
+3. BUILD & RELEASE PIPELINE
+----------------------------
+  Private repo (sparta-private)     Public repo (sparta-ai)
+  ┌─────────────────────┐          ┌──────────────────────┐
+  │ Full monorepo source │          │ Sparta config +      │
+  │ (engine + plugins)   │──CI─────►│ installer scripts    │
+  │ packages/opencode/   │ builds  │                      │
+  │ packages/cli/        │─────────►│ GitHub Releases:     │
+  │ packages/core/       │ binary  │  .exe, .dmg, .tar.gz │
+  │ packages/tui/        │ + config│                      │
+  └─────────────────────┘          └──────────────────────┘
 
-  Layer 2: Agent System (sparta.txt, sparta.ts)
-    - Master agent with hierarchical delegation
-    - 4-tier model (Master, Senior, Junior, Worker)
-    - Cross-validation for security-sensitive operations
-    - Persistence advisory for scheduled tasks
+4. AGENT SYSTEM
+---------------
+  Agent loaded via .opencode/agent/sparta.md (openocode config-agent system)
+  Frontmatter: { mode: "primary", color: "cyan" }
+  Body: system prompt defining:
+    - Tier system (Master/Senior/Junior/Worker)
+    - Decision framework (simple/medium/complex)
+    - Tool usage patterns
+    - Guardrails
 
-  Layer 3: Model Tiering (model_tiers.json)
-    - 3 model tiers with complexity-based routing
-    - Cross-validation rules for security operations
-    - Token limits per tier (8K/32K/unlimited)
+5. INSTALLATION METHODS
+-----------------------
+  a) Standalone binary (.exe, .dmg, .tar.gz)
+     - Engine compiled via Bun.build({ compile })
+     - Sparta config packaged alongside
+     - Installer creates desktop shortcut + PATH entry
 
-  Layer 4: Compression (packages/opencode/src/compression/)
-    - Multi-stage context optimization pipeline
-    - Filters for git, docker, build, test, shell, stacktrace
-    - Prose compression, deduplication, smart truncation
-    - Validation gate for quality control
+  b) npm package
+     - bin/sparta sets OPENCODE_CONFIG_DIR and runs engine
+     - Requires opencode engine from npm (peer dependency)
+     - Sparta config delivered via npm files
 
-  Layer 5: Isolation (packages/opencode/src/sandbox/)
-    - Sandbox manager for secure execution
-    - Ring buffer for resource tracking
-    - Egress control for network access
-    - Vault for credential management
+  c) Web installer (one-liner)
+     - Detects OS/platform
+     - Downloads correct release from GitHub
+     - Runs platform installer
 
-  Layer 6: Specialized Tools (packages/opencode/src/tool/)
-    - hierarchy-delegate: Multi-agent task decomposition
-    - stealth-browser: Anti-detection browser automation
-    - sandbox: Sandbox lifecycle management
-    - signin: OAuth/credential flow
-
-  Layer 7: Presentation (packages/tui, packages/ui)
-    - Terminal UI theme (sparta.json)
-    - Desktop UI theme (sparta.json)
-
-4. DATA FLOW
--------------
-  User Input
-    -> Master Agent (highest-intelligence model)
-      -> Complexity Assessment
-        -> Simple: Direct tool calls (Worker mode)
-        -> Medium: Decompose -> Junior helpers for mechanical work
-        -> Complex: Decompose -> Senior/Junior hierarchy
-          -> Parallel delegation via hierarchy-delegate
-            -> Cross-validation for security ops
-              -> Synthesis into coherent response
-    -> User Output
-
-5. SECURITY MODEL
+6. SECURITY MODEL
 ------------------
   Risk Level Classification:
-    Critical:  Medical, Legal, Emergency Response (disclaimers required)
-    High:      Finance, Transportation, Real Estate (user confirmation)
-    Moderate:  Engineering, Sciences, Trades (standard guardrails)
-    Low:       Arts, Business Ops, Media (minimal restrictions)
+    Critical:  Medical, Legal, Emergency (disclaimers required)
+    High:      Finance, Transportation, Real Estate
+    Moderate:  Engineering, Sciences, Trades
+    Low:       Arts, Business Ops, Media
 
   Universal Safeguards:
     - Dynamic guardrails calibrated to capability limits
-    - Sensitive content protocol with warning banners
     - Session-scoped permissions (never cross-session)
     - Destructive action guard (user confirmation required)
-    - Runaway reasoning cap (7 levels)
-    - Skill cascade breaker (failures don't auto-trigger adjacent skills)
-    - Audit trail for all skill activations
-
-6. DEPLOYMENT MODEL
---------------------
-  This public repo contains the Sparta-specific additions only.
-  The full opencode engine (required runtime) is installed separately
-  as an npm dependency.
-
-  Required runtime dependency: opencode ^1.18.0
-
-  Future Workflow:
-    - Private repo: Full monorepo development (engine + Sparta)
-    - Public repo: Cherry-picked Sparta-specific commits
-    - CI/CD: Automated extraction of Sparta changes for public release
-
-7. EXTENSIBILITY
------------------
-  Auto-Update System (SPARTA-SKILLS.md Section):
-    When a new domain is encountered:
-    1. Detect gap in existing faculties
-    2. Search 5+ authoritative sources
-    3. Generate 8-12 domain-specific skills
-    4. Append to SPARTA-SKILLS.md
-    5. Update security mapping
-
-  New tools can be added to packages/opencode/src/tool/ and registered
-  through the tool registry.
-
-8. COMPRESSION PIPELINE ARCHITECTURE
---------------------------------------
-  Input -> Command Detector -> Deduplicator
-    -> Preservation (important content markers)
-      -> Prose Engine + Prose Rules
-        -> Generic Filter
-          -> Domain-specific filters (Docker, Git, Build, Test, Shell, Stacktrace)
-            -> Smart Truncation
-              -> Validation Gate
-                -> Output
+    - Runaway reasoning cap (7 recursive depth levels)
+    - Faculty-driven risk model (41 faculties)

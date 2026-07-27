@@ -1,0 +1,165 @@
+name: Build & Release
+on:
+  push:
+    branches: [main]
+    tags: ["v*"]
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: "Private repo ref to build"
+        required: false
+        default: main
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-latest
+            target: linux-x64
+            arch: x64
+            binary_suffix: ""
+          - os: ubuntu-latest
+            target: linux-arm64
+            arch: arm64
+            binary_suffix: "-arm64"
+          - os: macos-latest
+            target: darwin-x64
+            arch: x64
+            binary_suffix: "-mac-x64"
+          - os: macos-latest
+            target: darwin-arm64
+            arch: arm64
+            binary_suffix: "-mac-arm64"
+          - os: windows-latest
+            target: win32-x64
+            arch: x64
+            binary_suffix: "-win-x64.exe"
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Checkout private repo (engine source)
+        uses: actions/checkout@v4
+        with:
+          repository: Kenzioda/sparta-private
+          ref: ${{ github.event.inputs.ref || 'main' }}
+          ssh-key: ${{ secrets.PRIVATE_REPO_SSH_KEY }}
+          path: engine
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.3.14
+
+      - name: Install engine dependencies
+        working-directory: engine/src
+        run: bun install --frozen-lockfile
+
+      - name: Build engine binary
+        working-directory: engine/src/packages/opencode
+        run: |
+          bun run script/build.ts --single ${{ matrix.binary_suffix && '--baseline' || '' }}
+
+      - name: Checkout public repo (config & installer scripts)
+        uses: actions/checkout@v4
+        with:
+          repository: Kenzioda/sparta-ai
+          token: ${{ secrets.PUBLIC_REPO_TOKEN }}
+          path: public
+
+      - name: Package binary with Sparta config
+        shell: bash
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+          PKG_DIR="sparta-${VERSION}-${{ matrix.target }}"
+          mkdir -p "$PKG_DIR"
+
+          # Copy engine binary
+          BINARY_NAME="${{ matrix.binary_suffix && 'opencode' || 'opencode' }}"
+          if [ "${{ matrix.os }}" = "windows-latest" ]; then
+            BINARY_NAME="opencode.exe"
+          fi
+          ENGINE_BIN="engine/src/packages/opencode/dist/opencode-${{ matrix.target }}/bin/$BINARY_NAME"
+          if [ -f "$ENGINE_BIN" ]; then
+            cp "$ENGINE_BIN" "$PKG_DIR/sparta${{ matrix.binary_suffix }}"
+          elif [ -f "engine/src/packages/opencode/dist/$BINARY_NAME" ]; then
+            cp "engine/src/packages/opencode/dist/$BINARY_NAME" "$PKG_DIR/sparta${{ matrix.binary_suffix }}"
+          fi
+
+          # Copy Sparta config
+          cp -r public/.opencode "$PKG_DIR/"
+          cp -r public/themes "$PKG_DIR/"
+          cp -r public/skills "$PKG_DIR/"
+          cp -r public/specs "$PKG_DIR/"
+          cp public/LICENSE "$PKG_DIR/" 2>/dev/null || true
+          cp public/README.md "$PKG_DIR/" 2>/dev/null || true
+
+          # Create tarball/zip
+          if [ "${{ matrix.os }}" = "windows-latest" ]; then
+            7z a "sparta-${VERSION}-${{ matrix.target }}.zip" "$PKG_DIR/*"
+          else
+            tar -czf "sparta-${VERSION}-${{ matrix.target }}.tar.gz" "$PKG_DIR"
+          fi
+
+      - name: Create installer (Windows)
+        if: matrix.os == 'windows-latest'
+        shell: pwsh
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+          & public/scripts/installer-win.ps1 -Version "$VERSION" -BinaryPath "sparta${env:binary_suffix}"
+
+      - name: Create installer (macOS)
+        if: matrix.os == 'macos-latest'
+        shell: bash
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+          bash public/scripts/installer-mac.sh "$VERSION" "sparta${{ matrix.binary_suffix }}"
+
+      - name: Create installer (Linux)
+        if: matrix.os == 'ubuntu-latest'
+        shell: bash
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+          bash public/scripts/installer-linux.sh "$VERSION" "sparta${{ matrix.binary_suffix }}"
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: sparta-${{ matrix.target }}
+          path: |
+            sparta-*.tar.gz
+            sparta-*.zip
+            sparta-*.exe
+            sparta-*.dmg
+            sparta-*.deb
+            sparta-*.AppImage
+
+  release:
+    needs: [build]
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+
+      - name: Publish to public repo releases
+        env:
+          GH_TOKEN: ${{ secrets.PUBLIC_REPO_TOKEN }}
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+          for dir in */; do
+            for file in "$dir"*; do
+              if [ -f "$file" ]; then
+                gh release upload "v$VERSION" "$file" \
+                  --repo Kenzioda/sparta-ai \
+                  --clobber
+              fi
+            done
+          done
+
+      - name: Publish to npm
+        if: matrix.os == 'ubuntu-latest'
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: |
+          cd public
+          npm publish

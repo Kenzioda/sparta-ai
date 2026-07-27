@@ -2,43 +2,61 @@
 
 **Super Personal Assistant for Real-time Tactical & Autonomous**
 
-A hierarchical multi-agent system extending opencode with tactical command structure, domain-expert skills database, and safety-governed deployment.
+A hierarchical multi-agent system built on top of the opencode engine, with tactical command structure, domain-expert skills database, and safety-governed deployment.
 
-## Quick Start
+## Install
 
-```bash
-npm install -g opencode
-git clone https://github.com/Kenzioda/sparta-ai.git
-cd sparta-ai
-npm install
-opencode --agent sparta
+### Option 1: Installer (recommended — fully standalone)
+
+| Platform | Download |
+|---|---|
+| Windows | [sparta-latest-win-x64-installer.exe](https://github.com/Kenzioda/sparta-ai/releases/latest) |
+| macOS (Intel) | [sparta-latest-mac-x64.tar.gz](https://github.com/Kenzioda/sparta-ai/releases/latest) |
+| macOS (Apple Silicon) | [sparta-latest-mac-arm64.tar.gz](https://github.com/Kenzioda/sparta-ai/releases/latest) |
+| Linux (x64) | [sparta-latest-linux-x64.tar.gz](https://github.com/Kenzioda/sparta-ai/releases/latest) |
+| Linux (ARM64) | [sparta-latest-linux-arm64.tar.gz](https://github.com/Kenzioda/sparta-ai/releases/latest) |
+
+Or run the web installer:
+
+```powershell
+# Windows (PowerShell)
+irm https://sparta.ai/install.ps1 | iex
 ```
 
-## Architecture
+```bash
+# macOS / Linux
+curl -fsSL https://sparta.ai/install.sh | bash
+```
+
+After install, just type `sparta` in your terminal or double-click the desktop icon.
+
+### Option 2: Via npm (requires Node.js 18+)
+
+```bash
+npm install -g opencode sparta-ai
+sparta
+```
+
+## Features
 
 - **Master Agent** — decomposes, delegates, verifies, synthesizes
 - **Senior Helper** — analysis, code review, complex sub-tasks
 - **Junior Helper** — search, grep, read, data gathering
-- **Worker** — direct tool calls for simple operations
+- **41-domain faculty system** with risk-governed deployment
+- **Context compression pipeline** for token optimization
+- **Sandbox isolation** for secure execution
+- **Anti-detection browser automation**
+- **376 skills** across 41 faculties
 
-## Key Features
-
-- 41-domain faculty system with risk-governed deployment
-- Context compression pipeline for token optimization
-- Sandbox isolation for secure execution
-- Anti-detection browser automation
-- Full skills database (376 skills across 41 faculties)
-
-## Structure
+## Repository Structure
 
 ```
-.opencode/          — Configuration and model tiering
-packages/opencode/  — Agent prompt, compression, sandbox, tools
-packages/core/      — Agent plugin registration
-packages/tui/       — Terminal UI theme
-packages/ui/        — Desktop UI theme
+.opencode/          — Agent definition, model tiering, config
+themes/             — TUI and desktop UI themes
 skills/             — Skills overview
 specs/storage/      — Full identity spec and skills database
+scripts/            — Installer scripts and CI pipeline
+bin/sparta          — CLI wrapper for npm installation
 ```
 
 ## License

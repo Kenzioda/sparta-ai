@@ -2,46 +2,40 @@ S.P.A.R.T.A — MANUAL INSTRUCTIONS
 ====================================
 Super Personal Assistant for Real-time Tactical & Autonomous
 
-PREREQUISITES
--------------
-- Node.js 18+ or Bun 1.3+
-- opencode CLI installed (npm install -g opencode or via your package manager)
-
 INSTALLATION
 ------------
-1. Install opencode if you haven't already:
-     npm install -g opencode
+Option A — Standalone Binary (recommended):
+  Download the installer for your OS from:
+    https://github.com/Kenzioda/sparta-ai/releases
 
-2. Clone this repo or copy the sparta-ai files to your opencode config:
-     git clone https://github.com/your-org/sparta-ai.git
-     cd sparta-ai
+  Windows: Run sparta-*-win-x64-installer.exe
+  macOS:   Extract sparta-*-mac-*.tar.gz and run install.sh
+  Linux:   Extract sparta-*-linux-*.tar.gz and run install.sh
 
-3. Install dependencies:
-     npm install
-     # or
-     bun install
+  After install, type 'sparta' in terminal or double-click desktop icon.
 
-4. Configure opencode to use the Sparta agent:
-     Copy or symlink .opencode/ to your opencode config directory
-     or set the OPENCODE_CONFIG_PATH environment variable to point here
+Option B — Via npm (requires Node.js 18+):
+  npm install -g opencode sparta-ai
+  sparta
+
+Option C — One-liner web install:
+  Windows PowerShell:  irm https://sparta.ai/install.ps1 | iex
+  macOS / Linux:       curl -fsSL https://sparta.ai/install.sh | bash
 
 USAGE
 -----
-Launch opencode with the Sparta agent:
-     opencode --agent sparta
-
-Or set Sparta as your default agent in opencode.jsonc.
+  sparta                    Launch interactive terminal UI
+  sparta --agent sparta    Launch with Sparta agent (default)
 
 ARCHITECTURE OVERVIEW
 ---------------------
 The Sparta system extends opencode with:
-  - A master agent prompt (packages/opencode/src/agent/sparta.txt)
-  - A plugin that registers the Sparta agent (packages/core/src/plugin/agent/sparta.ts)
-  - Compression engine for context optimization (packages/opencode/src/compression/)
-  - Sandbox isolation layer (packages/opencode/src/sandbox/)
+  - Agent definition via .opencode/agent/sparta.md
+  - Compression engine for context optimization (src/reference)
+  - Sandbox isolation layer (src/reference)
   - Specialized tools: stealth-browser, hierarchy-delegate, sandbox, signin
-  - UI themes for terminal (TUI) and desktop
-  - Full skills database (specs/storage/SPARTA-SKILLS.md) with 41 faculties
+  - UI themes for terminal (themes/tui) and desktop (themes/ui)
+  - Full skills database (specs/storage/SPARTA-SKILLS.md)
 
 TIER SYSTEM
 -----------
@@ -50,31 +44,23 @@ TIER SYSTEM
 - Junior Helper:         Budget subagent for search and data gathering
 - Worker:                Direct tool calls for simple operations
 
-FILES
------
-  .opencode/opencode.jsonc       - opencode configuration
-  .opencode/model_tiers.json     - Model tier definitions
-  packages/opencode/src/agent/sparta.txt  - Master agent prompt
-  packages/core/src/plugin/agent/sparta.ts - Agent plugin registration
-  packages/opencode/src/compression/      - Context compression engine
-  packages/opencode/src/sandbox/          - Sandbox isolation
-  packages/opencode/src/tool/             - Sparta-specific tools
-  packages/tui/src/theme/assets/sparta.json    - TUI theme
-  packages/ui/src/theme/themes/sparta.json     - Desktop UI theme
-  specs/storage/SPARTA.md              - Full identity specification
-  specs/storage/SPARTA-SKILLS.md       - 376 skills across 41 faculties
-  skills/sparta/SKILL.md               - Skills overview
+UNINSTALL
+---------
+  Windows: Run the uninstall.bat in the install directory, or use
+           Apps & Features in Settings.
+
+  macOS:   sudo rm -f /usr/local/bin/sparta
+           sudo rm -rf /usr/local/lib/sparta
+           rm -rf ~/Applications/S.P.A.R.T.A.app
+           rm -f ~/Desktop/S.P.A.R.T.A.app
+
+  Linux:   sudo /opt/sparta/uninstall.sh
+
+  npm:     npm uninstall -g sparta-ai opencode
 
 SECURITY
 --------
 - Faculty-driven risk model with 5 levels (Low to Critical)
-- Automatic disclaimers for regulated domains (medical, legal, financial)
-- Session-scoped permissions, never persisted across sessions
-- Destructive action guard requires explicit user confirmation
-- Runaway reasoning cap (7 depth levels) with auto-summarization
-
-DEVELOPMENT
------------
-This is the public S.P.A.R.T.A release. The full development monorepo
-(including the opencode engine) lives in the private repository.
-Contribute via the private repo; public updates are cherry-picked.
+- Automatic disclaimers for regulated domains
+- Session-scoped permissions, never persisted
+- Destructive action guard requires user confirmation
