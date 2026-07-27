@@ -1,0 +1,13 @@
+{
+  "command": "shell",
+  "detect": ["ls ", "cat ", "echo ", "cp ", "mv ", "rm ", "mkdir ", "chmod ", "grep ", "find ", "head ", "tail ", "sort ", "wc ", "du ", "df ", "ps ", "top ", "kill ", "pkill "],
+  "dropLines": ["^\\s*$", "Total "],
+  "collapseLines": [],
+  "includeLines": ["error:", "Error:", "permission denied", "No such file", "not found", "command not found"],
+  "deduplicate": true,
+  "dedupThreshold": 4,
+  "maxLines": 80,
+  "headLines": 15,
+  "tailLines": 15,
+  "priorityPatterns": ["error:", "Error:", "permission denied", "No such file", "not found"]
+}

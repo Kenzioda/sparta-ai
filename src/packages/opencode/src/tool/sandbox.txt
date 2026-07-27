@@ -1,0 +1,24 @@
+Manage sandbox applications — install, run, and persist command-line tools and services in an isolated environment.
+
+The sandbox provides app lifecycle management with ring-guard security:
+- Install packages via npm, binary links, or git clone
+- Start/stop applications and track running processes
+- Set apps as persistent to survive restarts
+- List all installed apps with status
+- View detailed status of a specific app
+- Uninstall apps and clean up resources
+
+Encrypted credential vault:
+- Store API keys and tokens securely (AES-256-GCM encrypted)
+- Retrieve stored credentials by key name
+- List all stored credential keys
+- Delete credentials
+
+Network egress monitoring:
+- Check if a destination is in the allowed outbound list
+- View egress connection log
+
+Usage:
+- For process management: use sandbox install, sandbox start, sandbox stop, sandbox list, sandbox status, sandbox persist, sandbox uninstall
+- For credentials: use sandbox vault set, sandbox vault get, sandbox vault list, sandbox vault delete
+- For egress: use sandbox egress check, sandbox egress log

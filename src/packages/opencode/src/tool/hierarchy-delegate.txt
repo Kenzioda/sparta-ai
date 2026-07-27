@@ -1,0 +1,21 @@
+Delegate a sub-task to a helper agent with automatic model tier selection.
+
+Use this tool when you have analyzed a complex request and identified sub-tasks that can be delegated to cheaper, faster models. The system automatically selects the appropriate model tier based on task complexity.
+
+When to use:
+- Complex tasks that can be decomposed into independent sub-tasks
+- Research or exploration that doesn't require the master model's full capability
+- File operations, code search, or data gathering that is mechanical in nature
+- Tasks that benefit from parallel execution
+
+When NOT to use:
+- Simple tasks you can handle directly in one turn (just respond normally)
+- Tasks requiring the full context of the conversation
+- Security-sensitive operations that shouldn't be delegated
+
+Usage notes:
+1. Set complexity to "low" for mechanical tasks (grep, glob, read), "medium" for analysis/code-gen, "high" for complex reasoning
+2. Provide a focused, self-contained prompt for each delegate
+3. You can fire multiple delegates in parallel for independent sub-tasks
+4. Always verify and synthesize results before presenting to the user
+5. Use cross_validate=true for security/auth/crypto tasks to get a second opinion

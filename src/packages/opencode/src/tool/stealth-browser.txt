@@ -1,0 +1,21 @@
+Control the camofox browser for web automation tasks.
+
+Stealth Browser is the built-in interface to the camofox MCP browser service. No other browser, headless browser, or automation library should be used for web browsing, form interaction, or scraping — only this tool.
+
+Available actions:
+- navigate: Go to a URL
+- snapshot: Get accessible page content as structured snapshot
+- screenshot: Capture page as base64 image
+- click: Click element (by CSS selector or element ref)
+- type: Type text into a field
+- evaluate: Run JavaScript in page context  
+- html: Get raw page HTML
+- close: Free browser resources
+- gui: Toggle between headless and visible GUI mode
+
+GUI mode is used when 2FA, manual sign-in, or human interaction is needed.
+The AI will prompt you before switching to GUI mode.
+When in GUI mode, interact with the browser window directly, then type "done" to continue.
+Run stealth_browser action=gui again to return to headless mode.
+
+This tool communicates with the camofox MCP server which manages its own browser profile, cookies, and session isolation.

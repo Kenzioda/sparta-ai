@@ -1,0 +1,13 @@
+{
+  "command": "git",
+  "detect": ["git ", "diff --git", "commit ", "branch ", "remote:", "fatal: ", "error:.*git"],
+  "dropLines": ["^>", "^<", "^---", "^@@ ", "^diff --git", "^index [0-9a-f]{7,}\\.\\.", "^new file mode", "^deleted file mode", "^old mode", "^new mode", "^copy from", "^copy to", "^rename from", "^rename to", "^similarity index", "^disimilarity index", "Your branch is up to date", "nothing to commit", "Already up to date", "up to date\\.$", "Fast-forward"],
+  "collapseLines": ["^commit [0-9a-f]{7,}", "remote: "],
+  "includeLines": ["^[+-][^+-]", "^## ", "^\\d+ file", "error:", "fatal:", "CONFLICT", "could not apply", "conflict"],
+  "deduplicate": true,
+  "dedupThreshold": 3,
+  "maxLines": 80,
+  "headLines": 24,
+  "tailLines": 24,
+  "priorityPatterns": ["error:", "fatal:", "CONFLICT", "conflict", "could not apply", "merge conflict"]
+}

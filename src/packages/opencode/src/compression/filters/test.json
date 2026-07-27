@@ -1,0 +1,13 @@
+{
+  "command": "test",
+  "detect": ["FAIL ", "PASS ", "Test Files", "Tests:", "expect(", "assert.", "AssertionError", "stack trace:", "at ", "✗", "✓", "✔", "✘", "TIMEOUT", "tests?", "suites?", "describe(", "it(", "test(", "expect(", "vitest", "jest", "pytest", "playwright"],
+  "dropLines": ["^\\.+$", "^\\s+at\\s+", "node_modules/", "webpack/bootstrap", "internal/modules/", "\\\\node_modules\\\\"],
+  "collapseLines": ["^\\s+#\\s+", "^\\s+at\\s+", "console\\.(log|warn|error)\\s+", "^(ok |not ok )"],
+  "includeLines": ["FAIL ", "PASS ", "Test Files", "Tests:", "✓.*\\d+ms", "✗.*\\d+ms", "TIMEOUT", "error:", "Error:", "expected", "received", "AssertionError", "TypeError:", "ReferenceError:"],
+  "deduplicate": true,
+  "dedupThreshold": 2,
+  "maxLines": 100,
+  "headLines": 20,
+  "tailLines": 30,
+  "priorityPatterns": ["FAIL ", "Error:", "error:", "AssertionError", "TypeError:", "TIMEOUT", "expected", "received", "✗"]
+}

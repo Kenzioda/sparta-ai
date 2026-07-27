@@ -1,0 +1,16 @@
+Connect external accounts to unlock additional free AI models for the Sparta Agent.
+
+Available free-tier providers and what they give you:
+- Google Gemini (gemini-2.0-flash, gemini-1.5-pro) — via aistudio.google.com
+- Groq (llama-3.3-70b, mixtral-8x7b, gemma2-9b) — via console.groq.com
+- OpenRouter (multiple open models) — via openrouter.ai/keys
+- GitHub Models (limited free tier) — via github.com/marketplace/models
+
+Usage:
+  /signin                          Show all available providers
+  /signin <provider>               List setup instructions for that provider
+  /signin <provider> key=<key>     Store API key for that provider
+  /signin status                   Show which accounts are connected
+  /signin disconnect               Remove all stored credentials
+
+Credentials are stored encrypted (AES-256-GCM) in the local vault.
