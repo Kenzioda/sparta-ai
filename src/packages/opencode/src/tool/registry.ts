@@ -20,6 +20,8 @@ import { HierarchyDelegateTool } from "./hierarchy-delegate"
 import { StealthBrowserTool } from "./stealth-browser"
 import { SandboxTool } from "./sandbox"
 import { SignInTool } from "./signin"
+import { ActivepiecesTool } from "./activepieces"
+import { CleanupTool } from "./cleanup"
 import * as Tool from "./tool"
 import { Config } from "@/config/config"
 import { type ToolContext as PluginToolContext, type ToolDefinition } from "@opencode-ai/plugin"
@@ -118,6 +120,8 @@ const layer = Layer.effect(
     const stealthBrowser = yield* StealthBrowserTool
     const sandbox = yield* SandboxTool
     const signin = yield* SignInTool
+    const activepieces = yield* ActivepiecesTool
+    const cleanup = yield* CleanupTool
     const codeMode = flags.experimentalCodeMode ? yield* Effect.promise(() => import("./code-mode")) : undefined
     const codeModeTool = codeMode ? yield* codeMode.CodeModeTool : undefined
 
@@ -230,6 +234,8 @@ const layer = Layer.effect(
           stealth: Tool.init(stealthBrowser),
           sandbox: Tool.init(sandbox),
           signin: Tool.init(signin),
+          activepieces: Tool.init(activepieces),
+          cleanup: Tool.init(cleanup),
           ...(codeModeTool ? { execute: Tool.init(codeModeTool) } : {}),
         })
 
@@ -257,6 +263,8 @@ const layer = Layer.effect(
             tool.stealth,
             tool.sandbox,
             tool.signin,
+            tool.activepieces,
+            tool.cleanup,
           ],
           task: tool.task,
           read: tool.read,

@@ -189,16 +189,83 @@ export class SandboxManager {
     return entry
   }
 
-  uninstall(name: string): void {
+  uninstall(name: string, permanent?: boolean): void {
     this.checkRing("sandbox_install", `uninstall ${name}`)
     const app = this.apps.get(name)
     if (!app) throw new Error(`App '${name}' not found`)
     this.stopWatchdog(name)
     if (app.running) this.stop(name)
     this.processes.delete(name)
-    if (fs.existsSync(app.dir)) fs.rmSync(app.dir, { recursive: true, force: true })
+
+    // Recycle Bin: move to .recycle/ instead of permanent delete
+    const recycleDir = path.join(SANDBOX_DIR, ".recycle")
+    if (!permanent && fs.existsSync(app.dir)) {
+      if (!fs.existsSync(recycleDir)) fs.mkdirSync(recycleDir, { recursive: true })
+      const dest = path.join(recycleDir, name)
+      try {
+        fs.renameSync(app.dir, dest)
+      } catch {
+        // cross-device rename — fall back to copy + delete
+        fs.cpSync(app.dir, dest, { recursive: true, force: true })
+        fs.rmSync(app.dir, { recursive: true, force: true })
+      }
+    } else if (fs.existsSync(app.dir)) {
+      fs.rmSync(app.dir, { recursive: true, force: true })
+    }
+
     this.apps.delete(name)
     this.saveApps()
+  }
+
+  recycleList(): { name: string; dir: string; movedAt: Date }[] {
+    const recycleDir = path.join(SANDBOX_DIR, ".recycle")
+    if (!fs.existsSync(recycleDir)) return []
+    const items: { name: string; dir: string; movedAt: Date }[] = []
+    for (const entry of fs.readdirSync(recycleDir)) {
+      const fullPath = path.join(recycleDir, entry)
+      try {
+        const stat = fs.statSync(fullPath)
+        items.push({ name: entry, dir: fullPath, movedAt: stat.mtime })
+      } catch {}
+    }
+    return items.sort((a, b) => b.movedAt.getTime() - a.movedAt.getTime())
+  }
+
+  recycleRestore(name: string): void {
+    const recycleDir = path.join(SANDBOX_DIR, ".recycle")
+    const src = path.join(recycleDir, name)
+    if (!fs.existsSync(src)) throw new Error(`Item '${name}' not found in recycle bin`)
+    const dst = path.join(SANDBOX_DIR, "apps", name)
+    try {
+      fs.renameSync(src, dst)
+    } catch {
+      fs.cpSync(src, dst, { recursive: true, force: true })
+      fs.rmSync(src, { recursive: true, force: true })
+    }
+    // Re-register in apps map
+    const entry: SandboxApp = {
+      name, type: "npm", source: name,
+      installedAt: Date.now(),
+      dir: dst,
+      persistent: false,
+      running: false,
+      pid: null,
+    }
+    this.apps.set(name, entry)
+    this.saveApps()
+  }
+
+  recyclePurge(): number {
+    const recycleDir = path.join(SANDBOX_DIR, ".recycle")
+    if (!fs.existsSync(recycleDir)) return 0
+    let count = 0
+    for (const entry of fs.readdirSync(recycleDir)) {
+      try {
+        fs.rmSync(path.join(recycleDir, entry), { recursive: true, force: true })
+        count++
+      } catch {}
+    }
+    return count
   }
 
   start(name: string): { status: string; pid?: number } {
@@ -248,6 +315,64 @@ export class SandboxManager {
     this.checkRing("sandbox_start", `restart ${name}`)
     this.stop(name)
     return this.start(name)
+  }
+
+  startBridge(port?: number): { status: string; pid?: number } {
+    const name = "http-mcp-bridge"
+    let app = this.apps.get(name)
+
+    if (!app) {
+      app = {
+        name, type: "npm", source: "builtin",
+        installedAt: Date.now(),
+        dir: path.join(SANDBOX_DIR, "apps", name),
+        persistent: true,
+        running: false,
+        pid: null,
+      }
+      this.apps.set(name, app)
+      if (!fs.existsSync(app.dir)) fs.mkdirSync(app.dir, { recursive: true })
+    }
+
+    if (app.running) return { status: "already_running", pid: app.pid! }
+
+    const bridgePath = path.join(
+      process.env.SPARTA_ROOT || process.cwd(),
+      "packages", "opencode", "src", "mcp", "builtin", "http-mcp-bridge.mjs"
+    )
+
+    if (!fs.existsSync(bridgePath)) {
+      throw new Error(`Bridge not found at ${bridgePath}`)
+    }
+
+    const proc = spawn(process.execPath, [bridgePath], {
+      stdio: "pipe",
+      detached: true,
+      env: {
+        ...process.env,
+        BRIDGE_PORT: String(port || 9128),
+        CAMOFOX_PATH: process.env.CAMOFOX_PATH || "camofox",
+      },
+    })
+
+    this.processes.set(name, proc)
+    app.pid = proc.pid || null
+    app.running = true
+    app.startedAt = Date.now()
+    this.saveApps()
+
+    proc.on("exit", () => {
+      app.running = false
+      app.pid = null
+      this.saveApps()
+    })
+
+    this.startWatchdog(name)
+    return { status: "started", pid: proc.pid }
+  }
+
+  stopBridge(): { status: string } {
+    return this.stop("http-mcp-bridge")
   }
 
   list(): AppStatus[] {

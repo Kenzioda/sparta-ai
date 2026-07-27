@@ -8,6 +8,12 @@ The sandbox provides app lifecycle management with ring-guard security:
 - View detailed status of a specific app
 - Uninstall apps and clean up resources
 
+HTTP↔MCP bridge:
+- bridge_start: starts the bridge that lets Activepieces workflows call stealth_browser
+- bridge_stop: stops the bridge
+- Activepieces sends POST to http://127.0.0.1:9128 with browser actions
+- Results returned to workflow — enables fully autonomous 24/7 browser automation
+
 Encrypted credential vault:
 - Store API keys and tokens securely (AES-256-GCM encrypted)
 - Retrieve stored credentials by key name
@@ -20,5 +26,6 @@ Network egress monitoring:
 
 Usage:
 - For process management: use sandbox install, sandbox start, sandbox stop, sandbox list, sandbox status, sandbox persist, sandbox uninstall
+- For bridge: sandbox bridge_start, sandbox bridge_stop
 - For credentials: use sandbox vault set, sandbox vault get, sandbox vault list, sandbox vault delete
 - For egress: use sandbox egress check, sandbox egress log

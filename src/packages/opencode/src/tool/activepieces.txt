@@ -1,0 +1,20 @@
+Manage workflow automation — list, execute, and monitor scheduled runs.
+
+Workflow engine runs 24/7 with support for:
+- stealth_browser (browser automation steps in workflows)
+- Webhooks, schedules, and 200+ integrations
+- Sandbox manager (install, persist, auto-restart)
+
+Usage:
+  activepieces list              List all workflows
+  activepieces execute <id>      Run workflow by ID
+  activepieces status <id>       Check execution status
+
+To use browser automation in a workflow, pass a payload with browser_step
+instructions. The workflow engine can then trigger HTTP calls
+that route through stealth_browser.
+
+For 24/7 operation, first install via sandbox:
+  sandbox install activepieces npm
+  sandbox persist activepieces true
+  sandbox start activepieces

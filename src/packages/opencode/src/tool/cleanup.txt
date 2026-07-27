@@ -1,0 +1,27 @@
+Manage runtime data retention — session history, browser profiles, sandbox junk.
+
+S.P.A.R.T.A generates files as you use it. This tool controls how long they're kept.
+
+Retention periods:
+  session <7|30|180|never>     Session history/checkpoints (default: 180 days)
+  browser <30|90|180|never>    Browser profiles (default: 30 days)
+  sandbox <7|30|180|never>     Sandbox junk + recycle bin (default: 30 days)
+
+Auto-cleanup (always on, no user setting):
+  Tool truncation output:  7 days
+  Model history:           7 days
+  Egress logs:             capped at 1000 entries
+
+Current settings:
+  cleanup status            Show current retention periods and disk usage
+
+Recycle Bin (sandbox):
+  When sandbox uninstall is called, apps go to .recycle/ instead of
+  permanent deletion. After the retention period, they're purged.
+  sandbox recycle list      View items in recycle bin
+  sandbox recycle restore <name>  Restore an app from recycle bin
+  sandbox recycle purge     Permanently delete all recycled items
+
+Vault deletion:
+  sandbox vault_delete <key>  Permanently removes credential from vault.
+                                No recycle. No undo. Use carefully.

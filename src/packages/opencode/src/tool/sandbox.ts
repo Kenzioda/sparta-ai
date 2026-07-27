@@ -33,11 +33,13 @@ function getEgress(): EgressGuard {
 export const Parameters = Schema.Struct({
   action: Schema.Literal(
     "install", "uninstall", "start", "stop", "restart", "list", "status", "persist",
+    "recycle_list", "recycle_restore", "recycle_purge",
+    "bridge_start", "bridge_stop",
     "vault_set", "vault_get", "vault_list", "vault_delete",
     "egress_check", "egress_log",
     "ring_status", "ring_set",
   ).annotate({
-    description: "Sandbox action to perform",
+    description: "Sandbox action. recycle actions manage the Recycle Bin. bridge_start launches HTTP↔MCP bridge.",
   }),
   name: Schema.optional(Schema.String).annotate({
     description: "App name (required for install/uninstall/start/stop/status/persist/vault_set/vault_get/vault_delete)",
@@ -55,7 +57,7 @@ export const Parameters = Schema.Struct({
     description: "Destination for egress check",
   }),
   port: Schema.optional(Schema.Number).annotate({
-    description: "Port for egress check (default: 443)",
+    description: "Port for egress check or bridge port for bridge_start (default: 9128)",
   }),
   tier: Schema.optional(Schema.Number).annotate({
     description: "Ring tier level for ring_set (-1 to 3)",
@@ -88,7 +90,7 @@ export const SandboxTool = Tool.define(
             case "uninstall": {
               if (!params.name) return { title: "Error", metadata: {}, output: "name is required for uninstall" }
               getManager().uninstall(params.name)
-              return { title: "Sandbox", metadata: {}, output: `Uninstalled ${params.name}` }
+              return { title: "Sandbox", metadata: {}, output: `Uninstalled ${params.name} (moved to recycle bin).\nUndo: sandbox recycle_restore name=${params.name}\nPermanent: sandbox uninstall will auto-purge after retention period.` }
             }
 
             case "start": {
@@ -107,6 +109,25 @@ export const SandboxTool = Tool.define(
               if (!params.name) return { title: "Error", metadata: {}, output: "name is required for restart" }
               const result = getManager().restart(params.name)
               return { title: "Sandbox", metadata: {}, output: `${params.name}: ${result.status}` }
+            }
+
+            case "bridge_start": {
+              const port = params.port || 9128
+              try {
+                const result = getManager().startBridge(port)
+                return {
+                  title: "Bridge",
+                  metadata: {},
+                  output: `HTTP↔MCP bridge started on port ${port} (pid ${result.pid}).\nActivepieces workflows can now call stealth_browser via POST http://127.0.0.1:${port}\nBody: { "action": "navigate", "params": { "url": "..." } }`,
+                }
+              } catch (err) {
+                return { title: "Bridge Error", metadata: {}, output: `Error: ${(err as Error).message}\nEnsure camofox is installed and in PATH.` }
+              }
+            }
+
+            case "bridge_stop": {
+              const result = getManager().stopBridge()
+              return { title: "Bridge", metadata: {}, output: `Bridge: ${result.status}` }
             }
 
             case "list": {
@@ -142,6 +163,24 @@ export const SandboxTool = Tool.define(
               if (!params.name) return { title: "Error", metadata: {}, output: "name is required for persist" }
               getManager().setPersistent(params.name, params.enabled ?? true)
               return { title: "Sandbox", metadata: {}, output: `${params.name}: persistence set to ${params.enabled ?? true}` }
+            }
+
+            case "recycle_list": {
+              const items = getManager().recycleList()
+              if (items.length === 0) return { title: "Recycle Bin", metadata: {}, output: "Recycle bin is empty." }
+              const lines = items.map((i) => `  ${i.name.padEnd(20)} moved ${i.movedAt.toISOString().slice(0, 10)}`)
+              return { title: "Recycle Bin", metadata: {}, output: `Recycled items:\n${lines.join("\n")}\n\nRestore with: sandbox recycle_restore name=<name>\nPurge all with: sandbox recycle_purge` }
+            }
+
+            case "recycle_restore": {
+              if (!params.name) return { title: "Error", metadata: {}, output: "name is required for recycle_restore" }
+              getManager().recycleRestore(params.name)
+              return { title: "Recycle Bin", metadata: {}, output: `Restored ${params.name} from recycle bin.` }
+            }
+
+            case "recycle_purge": {
+              const count = getManager().recyclePurge()
+              return { title: "Recycle Bin", metadata: {}, output: `Purged ${count} items from recycle bin.` }
             }
 
             case "vault_set": {

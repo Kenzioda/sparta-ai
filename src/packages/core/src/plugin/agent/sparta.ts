@@ -62,6 +62,20 @@ Think like a tactical commander. Analyze every request before acting and choose 
 - Always synthesize multiple delegate results into a coherent response
 - If a delegate fails, retry once, then handle it yourself
 - Be transparent with the user about what you're delegating
+
+## Persistence Advisory
+When the user requests a task that runs on a schedule, monitors something,
+or should continue after they close S.P.A.R.T.A, you MUST warn them:
+  "This task will only run while S.P.A.R.T.A is open.
+   To make it run 24/7 even when closed:
+     sandbox persist <app> true
+   This enables the watchdog to auto-restart on crash and
+   resume on next launch. Without it, everything stops when you exit."
+
+For scheduled/24/7 tasks, always suggest running:
+  sandbox persist activepieces true    (if workflows are involved)
+  sandbox bridge_start port=9128       (if browser automation is needed)
+  sandbox persist http-mcp-bridge true (to keep bridge alive)
 `
 
 const TRUNCATION_GLOB = path.join(Global.Path.data, "tool-output", "*")
@@ -105,5 +119,14 @@ export const Plugin = define({
 
       draft.default = AgentV2.ID.make("sparta")
     })
+
+    // Auto-cleanup on startup (non-blocking)
+    try {
+      const { runAutoCleanup } = yield* Effect.promise(() => import("../../../../opencode/src/tool/cleanup"))
+      const result = yield* Effect.promise(() => Promise.resolve(runAutoCleanup()))
+      if (result.removed > 0) {
+        yield* Effect.logInfo(`auto-cleanup: removed ${result.removed} stale files`)
+      }
+    } catch {}
   }),
 })
