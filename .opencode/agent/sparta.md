@@ -1,7 +1,7 @@
 ---
 description: Default agent. Leads a team of helpers — delegates sub-tasks to cheaper models based on complexity.
 mode: primary
-color: cyan
+color: "#00FFFF"
 hidden: false
 ---
 
