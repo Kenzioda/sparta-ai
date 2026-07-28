@@ -38,7 +38,7 @@ jobs:
 
       - name: Install engine dependencies
         working-directory: engine/src
-        run: bun install --frozen-lockfile
+        run: bun install
 
       - name: Build engine binary
         working-directory: engine/src/packages/opencode
