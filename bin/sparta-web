@@ -1,0 +1,97 @@
+#!/usr/bin/env node
+import { spawn } from "node:child_process"
+import { createServer, request as httpRequest } from "node:http"
+import { readFileSync, existsSync, statSync } from "node:fs"
+import { resolve, dirname, extname } from "node:path"
+import { fileURLToPath } from "node:url"
+
+const __dirname = dirname(fileURLToPath(import.meta.url))
+const spartaRoot = resolve(__dirname, "..")
+const webRoot = resolve(spartaRoot, "web")
+const port = 4096
+const enginePort = 4097
+const MIME = {
+  ".html": "text/html;charset=utf-8",
+  ".css": "text/css;charset=utf-8",
+  ".js": "application/javascript;charset=utf-8",
+  ".json": "application/json",
+  ".png": "image/png",
+  ".svg": "image/svg+xml",
+  ".ico": "image/x-icon",
+  ".woff2": "font/woff2",
+}
+
+// ─── start engine hidden ────────────────────────────────────
+const engine = spawn("opencode", ["serve", "--port", String(enginePort)], {
+  stdio: "ignore",
+  windowsHide: true,
+  detached: true,
+})
+engine.unref()
+
+// cleanup on exit
+process.on("exit", () => { try { engine.kill() } catch {} })
+process.on("SIGINT", () => { try { engine.kill() } catch {}; process.exit(0) })
+process.on("SIGTERM", () => { try { engine.kill() } catch {}; process.exit(0) })
+
+// ─── serve static files + proxy to engine ───────────────────
+const server = createServer((req, res) => {
+  const url = new URL(req.url, `http://${req.headers.host || "localhost"}`)
+
+  // Proxy API calls to engine
+  if (url.pathname.startsWith("/api/")) {
+    const opts = {
+      hostname: "127.0.0.1",
+      port: enginePort,
+      path: url.pathname + url.search,
+      method: req.method,
+      headers: { ...req.headers, host: `127.0.0.1:${enginePort}` },
+    }
+    const proxyReq = httpRequest(opts, (proxyRes) => {
+      res.writeHead(proxyRes.statusCode, proxyRes.headers)
+      proxyRes.pipe(res)
+    })
+    proxyReq.on("error", () => {
+      res.writeHead(502)
+      res.end("Engine unavailable")
+    })
+    if (req.method !== "GET" && req.method !== "HEAD") {
+      req.pipe(proxyReq)
+    } else {
+      proxyReq.end()
+    }
+    return
+  }
+
+  // Serve static files
+  let filePath = url.pathname === "/" ? "/index.html" : url.pathname
+  filePath = resolve(webRoot, filePath.replace(/^\//, "").replace(/\.\./g, ""))
+
+  if (!existsSync(filePath)) {
+    // fallback to index.html for SPA routing
+    filePath = resolve(webRoot, "index.html")
+  }
+
+  try {
+    const ext = extname(filePath)
+    const stat = statSync(filePath)
+    res.writeHead(200, {
+      "Content-Type": MIME[ext] || "application/octet-stream",
+      "Content-Length": stat.size,
+      "Cache-Control": ext === ".html" ? "no-cache" : "max-age=86400",
+    })
+    res.end(readFileSync(filePath))
+  } catch {
+    res.writeHead(404)
+    res.end("Not found")
+  }
+})
+
+server.listen(port, () => {
+  const url = `http://localhost:${port}`
+  console.log(`S.P.A.R.T.A Web UI: ${url}`)
+  const start =
+    process.platform === "win32" ? "start" :
+    process.platform === "darwin" ? "open" : "xdg-open"
+  spawn(start, [url], { stdio: "ignore", detached: true, windowsHide: true }).unref()
+})

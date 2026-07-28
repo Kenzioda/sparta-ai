@@ -6,14 +6,17 @@
   "private": false,
   "type": "module",
   "bin": {
-    "sparta": "./bin/sparta"
+    "sparta": "./bin/sparta",
+    "sparta-web": "./bin/sparta-web"
   },
   "files": [
     "bin/",
+    "web/",
     ".opencode/",
     "themes/",
     "skills/",
     "specs/",
+    "scripts/",
     "README.md",
     "LICENSE"
   ],

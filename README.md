@@ -10,6 +10,13 @@ npm install -g github:Kenzioda/sparta-ai
 sparta
 ```
 
+### Web UI
+
+```bash
+sparta-web
+# Opens S.P.A.R.T.A Web UI at http://localhost:4096
+```
+
 ### Alternatives
 
 ```bash

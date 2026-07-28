@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>S.P.A.R.T.A</title>
+  <link rel="icon" type="image/png" href="assets/img/logo-t.png">
+  <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+
+  <!-- Loading Screen -->
+  <div id="loadingScreen">
+    <div class="loader-content">
+      <img src="assets/img/logo-t.png" alt="S.P.A.R.T.A" class="loader-logo">
+      <h1 class="loader-title">S.P.A.R.T.A</h1>
+      <p class="loader-sub">INITIALIZING NEURAL INTERFACE...</p>
+      <div class="loader-bar"><div class="loader-fill"></div></div>
+    </div>
+  </div>
+
+  <!-- Main App -->
+  <div id="app" class="hidden">
+
+    <!-- Header -->
+    <header id="header">
+      <div class="header-left">
+        <img src="assets/img/logo.png" alt="S.P.A.R.T.A" class="header-logo">
+        <div>
+          <h1 class="header-title">S.P.A.R.T.A</h1>
+          <p class="header-sub">Super Personal Assistant · Real-time Tactical & Autonomous</p>
+        </div>
+      </div>
+      <div class="header-right">
+        <span class="status-dot" id="statusDot"></span>
+        <span id="statusLabel">DISCONNECTED</span>
+        <button id="sidebarToggle" class="menu-btn mobile-only"><i class="fa-solid fa-sliders-h"></i></button>
+        <button id="menuBtn" class="menu-btn"><i class="fa-solid fa-bars"></i></button>
+
+        <!-- Dropdown Menu -->
+        <div id="menuDropdown" class="menu-dropdown hidden">
+          <div class="menu-user">
+            <img src="assets/img/logo-t.png" alt="" class="menu-avatar">
+            <div>
+              <p class="menu-name">Local Operator</p>
+              <p class="menu-role">S.P.A.R.T.A Terminal</p>
+            </div>
+          </div>
+          <div class="menu-divider"></div>
+
+          <div class="menu-section">
+            <p class="menu-section-title">AGENT</p>
+            <div class="menu-item" onclick="App.showPanel('agent')"><i class="fa-solid fa-robot"></i> Switch Agent</div>
+            <div class="menu-item" onclick="App.showPanel('model')"><i class="fa-solid fa-microchip"></i> Model</div>
+            <div class="menu-item" onclick="App.showPanel('provider')"><i class="fa-solid fa-plug"></i> Providers</div>
+          </div>
+
+          <div class="menu-divider"></div>
+
+          <div class="menu-section">
+            <p class="menu-section-title">SESSION</p>
+            <div class="menu-item" onclick="App.showPanel('sessions')"><i class="fa-solid fa-clock-rotate-left"></i> History</div>
+            <div class="menu-item" onclick="App.clearSession()"><i class="fa-solid fa-plus"></i> New Session</div>
+            <div class="menu-item" onclick="App.showPanel('export')"><i class="fa-solid fa-download"></i> Export</div>
+          </div>
+
+          <div class="menu-divider"></div>
+
+          <div class="menu-section">
+            <p class="menu-section-title">SYSTEM</p>
+            <div class="menu-item" onclick="App.showPanel('mcp')"><i class="fa-solid fa-puzzle-piece"></i> MCP Servers</div>
+            <div class="menu-item" onclick="App.showPanel('config')"><i class="fa-solid fa-gear"></i> Configuration</div>
+            <div class="menu-item" onclick="App.showPanel('themes')"><i class="fa-solid fa-palette"></i> Theme</div>
+          </div>
+
+          <div class="menu-divider"></div>
+
+          <div class="menu-section">
+            <p class="menu-section-title">ACCOUNT</p>
+            <div class="menu-item" onclick="App.showPanel('login')"><i class="fa-solid fa-right-to-bracket"></i> Sign In</div>
+            <div class="menu-item" onclick="App.showPanel('profile')"><i class="fa-solid fa-user"></i> Profile</div>
+            <div class="menu-item" onclick="App.showPanel('about')"><i class="fa-solid fa-circle-info"></i> About</div>
+            <div class="menu-item" onclick="App.showPanel('manual')"><i class="fa-solid fa-book"></i> Manual Instructions</div>
+          </div>
+
+          <div class="menu-divider"></div>
+
+          <div class="menu-item menu-danger" onclick="App.showPanel('logout')"><i class="fa-solid fa-right-from-bracket"></i> Logout</div>
+        </div>
+      </div>
+    </header>
+
+    <!-- Panels (modal overlays for CLI features) -->
+    <div id="panelOverlay" class="panel-overlay hidden" onclick="App.hidePanel()">
+      <div class="panel-modal" onclick="event.stopPropagation()">
+        <div class="panel-modal-header">
+          <h3 id="panelTitle"></h3>
+          <button id="panelCloseBtn" onclick="App.hidePanel()"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <div id="panelBody" class="panel-modal-body"></div>
+      </div>
+    </div>
+
+    <div id="sidebarOverlay" class="sidebar-overlay hidden" onclick="App.toggleSidebar()"></div>
+
+    <div id="main">
+
+      <!-- LEFT SIDEBAR -->
+      <aside id="sidebar">
+
+        <!-- 1. Live Voice Mode -->
+        <section class="panel voice-panel">
+          <div class="panel-header">
+            <h2><i class="icon-mic"></i> LIVE VOICE MODE</h2>
+            <span class="badge" id="voiceBadge">DISCONNECTED</span>
+          </div>
+          <div class="panel-body">
+            <div class="voice-visualizer" id="voiceVisualizer">
+              <canvas id="voiceCanvas"></canvas>
+              <p class="voice-standby">Click <strong>INITIALIZE</strong> to start bi-directional voice streaming.</p>
+            </div>
+            <div id="voiceTranscript" class="transcript-box hidden">
+              <p id="userTranscript" class="transcript-user"></p>
+              <p id="spartaTranscript" class="transcript-sparta"></p>
+            </div>
+            <select id="voiceSource" class="input-select">
+              <option value="builtin">Built-in (Gemini Live)</option>
+              <option value="external">External (Bring your own voice service)</option>
+            </select>
+            <div id="externalVoiceOptions" class="hidden">
+              <input type="text" id="externalVoiceUrl" class="input-text" placeholder="wss://your-voice-server.com/stream">
+              <input type="text" id="externalVoiceKey" class="input-text" placeholder="API key (optional)">
+            </div>
+            <button id="voiceBtn" class="btn btn-emerald">INITIALIZE LIVE COMMS</button>
+          </div>
+        </section>
+
+        <!-- 2. Image Attachment -->
+        <section class="panel">
+          <div class="panel-header">
+            <h2><i class="icon-image"></i> VISUAL RECON</h2>
+          </div>
+          <div class="panel-body">
+            <div class="warning-box">
+              <i class="icon-warning"></i>
+              <span>Image analysis depends on the AI model selected. Not all models support vision. Fallback to text-only if unsupported.</span>
+            </div>
+            <div class="drop-zone" id="dropZone">
+              <input type="file" id="imageInput" accept="image/*" hidden>
+              <i class="icon-upload"></i>
+              <span id="dropZoneText">Click or drag image for analysis</span>
+              <img id="imagePreview" class="hidden">
+            </div>
+            <select id="imageModel" class="input-select">
+              <option value="auto">Auto-detect best model</option>
+              <option value="gemini">Gemini Vision</option>
+              <option value="gpt4">GPT-4 Vision</option>
+              <option value="claude">Claude Vision</option>
+            </select>
+            <button id="clearImgBtn" class="btn btn-ghost hidden">Remove image</button>
+          </div>
+        </section>
+
+        <!-- 3. Agent Controls -->
+        <section class="panel">
+          <div class="panel-header">
+            <h2><i class="icon-terminal"></i> AGENT</h2>
+            <span class="badge" id="agentBadge">SPARTA</span>
+          </div>
+          <div class="panel-body">
+            <select id="agentSelect" class="input-select">
+              <option value="sparta">S.P.A.R.T.A (Master)</option>
+              <option value="build">Build (Development)</option>
+              <option value="plan">Plan (Analysis)</option>
+              <option value="general">General (Multi-purpose)</option>
+            </select>
+            <select id="modelSelect" class="input-select">
+              <option value="">Auto-select model</option>
+              <option value="gemini-3-flash">Gemini 3 Flash</option>
+              <option value="gemini-3-pro">Gemini 3 Pro</option>
+              <option value="gpt-4o">GPT-4o</option>
+              <option value="gpt-4o-mini">GPT-4o Mini</option>
+              <option value="claude-4-sonnet">Claude 4 Sonnet</option>
+              <option value="claude-4-haiku">Claude 4 Haiku</option>
+            </select>
+            <button id="randomSkillBtn" class="btn btn-primary" style="font-size:0.6rem;">🎲 RANDOM SKILL TOPIC</button>
+            <p id="skillTopic" class="skill-topic hidden"></p>
+          </div>
+        </section>
+
+        <button id="sidebarClose" class="sidebar-close mobile-only" onclick="App.toggleSidebar()"><i class="fa-solid fa-xmark"></i></button>
+      </aside>
+
+      <!-- RIGHT CHAT AREA -->
+      <main id="chat">
+
+        <!-- Messages -->
+        <div id="messages">
+          <div class="welcome">
+            <img src="assets/img/logo-t.png" alt="" class="welcome-logo">
+            <h2>S.P.A.R.T.A AGENT STANDBY</h2>
+            <p>Submit a directive below to begin tactical processing.</p>
+          </div>
+        </div>
+
+        <!-- Audio Player -->
+        <div id="audioPlayer" class="hidden">
+          <span><i class="icon-volume"></i> VOICE TRANSMISSION</span>
+          <audio id="ttsAudio" controls></audio>
+        </div>
+
+        <!-- Grounding Sources -->
+        <div id="grounding" class="hidden">
+          <span><i class="icon-link"></i> RECON SOURCES</span>
+          <div id="groundingList"></div>
+        </div>
+
+        <!-- Input Area -->
+        <div id="inputArea">
+          <textarea id="promptInput" rows="3" placeholder="Enter your directive, question, or command..."></textarea>
+          <div class="input-footer">
+            <span id="charCounter">0 chars</span>
+            <div class="input-actions">
+              <label class="toggle-label">
+                <input type="checkbox" id="toggleSearch" checked>
+                <span>Web Recon</span>
+              </label>
+              <button id="clearBtn" class="btn btn-ghost">Clear</button>
+              <button id="sendBtn" class="btn btn-primary">ENGAGE</button>
+            </div>
+          </div>
+        </div>
+
+      </main>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <script type="module">
+    import { GoogleGenAI, Modality } from 'https://esm.run/@google/genai';
+    window.GoogleGenAI = GoogleGenAI;
+    window.Modality = Modality;
+  </script>
+  <script src="assets/js/chat.js"></script>
+  <script src="assets/js/voice.js"></script>
+  <script src="assets/js/app.js"></script>
+</body>
+</html>
