@@ -1,5 +1,5 @@
 const App = {
-  engineUrl: 'http://127.0.0.1:4097',
+  get engineUrl() { return window.location.origin },
   sessionId: null,
   currentAgent: 'sparta',
   currentModel: '',
@@ -519,7 +519,7 @@ Operating Principles:
   // ─── ENGINE ──────────────────────────────────────────────────
   async checkEngine() {
     try {
-      const res = await fetch(`${this.engineUrl}/api/health`, { signal: AbortSignal.timeout(3000) })
+      const res = await fetch(`/api/health`, { signal: AbortSignal.timeout(3000) })
       if (res.ok) {
         this.setOnline(true)
         await this.createSession()
@@ -534,7 +534,7 @@ Operating Principles:
 
   async createSession() {
     try {
-      const res = await fetch(`${this.engineUrl}/api/session`, {
+      const res = await fetch(`/api/session`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' }
       })
@@ -550,10 +550,10 @@ Operating Principles:
     if (!this.sessionId) return this.fallback(text)
     try {
       // send prompt
-      const res = await fetch(`${this.engineUrl}/api/session/${this.sessionId}/prompt`, {
+      const res = await fetch(`/api/session/${this.sessionId}/prompt`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: text })
+        body: JSON.stringify({ prompt: text })
       })
       if (!res.ok) return this.fallback(text)
 
@@ -566,28 +566,22 @@ Operating Principles:
   },
 
   async waitForResponse(sessionId) {
-    return new Promise((resolve) => {
-      const es = new EventSource(`${this.engineUrl}/api/session/${sessionId}/event`)
-      let result = ''
-      const timeout = setTimeout(() => { es.close(); resolve(result || 'Response timeout.') }, 120000)
-      es.onmessage = (e) => {
-        try {
-          const data = JSON.parse(e.data)
-          if (data.text) result += data.text
-          if (data.type === 'final' || data.done) {
-            clearTimeout(timeout)
-            es.close()
-            resolve(result)
-          }
-        } catch { /* skip non-JSON events */ }
+    try {
+      // wait for engine to finish processing
+      await fetch(`/api/session/${sessionId}/wait`, { method: 'POST', signal: AbortSignal.timeout(120000) })
+      // read messages
+      const res = await fetch(`/api/session/${sessionId}/message`, { signal: AbortSignal.timeout(10000) })
+      if (res.ok) {
+        const data = await res.json()
+        if (Array.isArray(data)) {
+          return data.map(m => m.text || m.content || '').filter(Boolean).join('\n')
+        }
+        if (data.messages) {
+          return data.messages.map(m => m.text || m.content || '').filter(Boolean).join('\n')
+        }
       }
-      es.onerror = () => {
-        // usually fires when stream ends
-        clearTimeout(timeout)
-        es.close()
-        resolve(result || 'Connection closed.')
-      }
-    })
+    } catch {}
+    return ''
   },
 
   fallback(text) {
