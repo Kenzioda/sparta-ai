@@ -5,6 +5,7 @@
 ## Install
 
 ```bash
+# Global Installation
 npm install -g github:Kenzioda/sparta-ai
 sparta
 ```
@@ -12,6 +13,7 @@ sparta
 ### One-liner
 
 ```bash
+# Mac / Linux
 curl -fsSL https://raw.githubusercontent.com/Kenzioda/sparta-ai/main/scripts/install.sh | bash
 sparta
 ```
