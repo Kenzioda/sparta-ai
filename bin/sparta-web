@@ -112,6 +112,8 @@ const server = createServer((req, res) => {
 server.listen(port, () => {
   const url = `http://localhost:${port}`
   console.log(`S.P.A.R.T.A Web UI: ${url}`)
-  const start = process.platform === "win32" ? "start" : process.platform === "darwin" ? "open" : "xdg-open"
-  spawn(start, [url], { stdio: "ignore", detached: true, windowsHide: true }).unref()
+  try {
+    const start = process.platform === "win32" ? "start" : process.platform === "darwin" ? "open" : "xdg-open"
+    spawn(start, [url], { stdio: "ignore", detached: true, windowsHide: true }).unref()
+  } catch {}
 })
