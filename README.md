@@ -2,7 +2,7 @@
 
 **Super Personal Assistant for Real-time Tactical & Autonomous**
 
-A hierarchical multi-agent system built on top of the opencode engine, with tactical command structure, domain-expert skills database, and safety-governed deployment.
+A hierarchical multi-agent system built on top of the opencode framework, with tactical command structure, domain-expert skills database, and safety-governed deployment.
 
 ## Install
 
@@ -62,3 +62,9 @@ bin/sparta          — CLI wrapper for npm installation
 ## License
 
 MIT
+
+## Special Thanks
+
+opencode - https://github.com/anomalyco/opencode
+camofox - https://github.com/jo-inc/camofox-browser
+activepieces - https://github.com/activepieces/activepieces
