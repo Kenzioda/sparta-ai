@@ -7,6 +7,7 @@ on:
 jobs:
   build:
     strategy:
+      fail-fast: false
       matrix:
         include:
           - os: ubuntu-latest
@@ -89,11 +90,12 @@ jobs:
           & public/scripts/installer-win.ps1 -Version $VERSION -BinaryPath "sparta-${VERSION}/sparta.exe"
 
       - name: Upload artifacts
+        continue-on-error: true
         uses: actions/upload-artifact@v4
         with:
           name: sparta-${{ matrix.target }}
           path: sparta-*.tar.gz
-          compression-level: 0
+          retention-days: 1
 
   release:
     needs: [build]
