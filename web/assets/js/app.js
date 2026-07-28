@@ -553,7 +553,7 @@ Operating Principles:
       const res = await fetch(`/api/session/${this.sessionId}/prompt`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ prompt: text })
+        body: JSON.stringify({ prompt: { text } })
       })
       if (!res.ok) return this.fallback(text)
 
@@ -567,17 +567,20 @@ Operating Principles:
 
   async waitForResponse(sessionId) {
     try {
-      // wait for engine to finish processing
       await fetch(`/api/session/${sessionId}/wait`, { method: 'POST', signal: AbortSignal.timeout(120000) })
-      // read messages
       const res = await fetch(`/api/session/${sessionId}/message`, { signal: AbortSignal.timeout(10000) })
       if (res.ok) {
-        const data = await res.json()
-        if (Array.isArray(data)) {
-          return data.map(m => m.text || m.content || '').filter(Boolean).join('\n')
-        }
-        if (data.messages) {
-          return data.messages.map(m => m.text || m.content || '').filter(Boolean).join('\n')
+        const json = await res.json()
+        const msgs = json.data || json.messages || (Array.isArray(json) ? json : [])
+        // get last assistant message content
+        for (let i = msgs.length - 1; i >= 0; i--) {
+          const m = msgs[i]
+          if (m.type === 'assistant' && m.content) {
+            return m.content.map(c => c.text || '').filter(Boolean).join('')
+          }
+          if (m.role === 'assistant' && m.content) {
+            return typeof m.content === 'string' ? m.content : JSON.stringify(m.content)
+          }
         }
       }
     } catch {}
