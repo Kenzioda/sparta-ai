@@ -566,13 +566,14 @@ Operating Principles:
   },
 
   async waitForResponse(sessionId) {
-    try {
-      await fetch(`/api/session/${sessionId}/wait`, { method: 'POST', signal: AbortSignal.timeout(120000) })
-      const res = await fetch(`/api/session/${sessionId}/message`, { signal: AbortSignal.timeout(10000) })
-      if (res.ok) {
+    const maxAttempts = 30
+    for (let attempt = 0; attempt < maxAttempts; attempt++) {
+      await new Promise(r => setTimeout(r, 2000))
+      try {
+        const res = await fetch(`/api/session/${sessionId}/message`, { signal: AbortSignal.timeout(5000) })
+        if (!res.ok) continue
         const json = await res.json()
         const msgs = json.data || json.messages || (Array.isArray(json) ? json : [])
-        // get last assistant message content
         for (let i = msgs.length - 1; i >= 0; i--) {
           const m = msgs[i]
           if (m.type === 'assistant' && m.content) {
@@ -582,8 +583,8 @@ Operating Principles:
             return typeof m.content === 'string' ? m.content : JSON.stringify(m.content)
           }
         }
-      }
-    } catch {}
+      } catch {}
+    }
     return ''
   },
 
