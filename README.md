@@ -2,15 +2,15 @@
 
 **Super Personal Assistant for Real-time Tactical & Autonomous**
 
-## Install
+## Primary Installation(cross-platform)
 
 ```bash
-# Global Installation
+# Global 
 npm install -g github:Kenzioda/sparta-ai
 sparta
 ```
 
-### One-liner
+### Alternatives
 
 ```bash
 # Mac / Linux
@@ -47,5 +47,10 @@ bin/sparta          — CLI wrapper for npm installation
 ```
 
 ## License
-
 MIT
+
+## Special Thanks
+
+- **OpenCode** — https://github.com/anomalyco/opencode
+- **Camofox** — https://github.com/jo-inc/camofox-browser
+- **Activepieces** — https://github.com/activepieces/activepieces
