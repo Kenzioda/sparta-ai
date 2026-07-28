@@ -42,7 +42,7 @@ jobs:
 
       - name: Build engine binary
         working-directory: engine/src/packages/opencode
-        run: bun run script/build.ts --single --skip-install
+        run: bun run script/build.ts --single --skip-install --skip-embed-web-ui 2>&1
 
       - name: Checkout public repo (config & installer scripts)
         uses: actions/checkout@v4
