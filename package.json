@@ -21,7 +21,7 @@
     "LICENSE"
   ],
   "scripts": {
-    "postinstall": "echo 'S.P.A.R.T.A installed. Run: sparta'"
+    "postinstall": "node ./scripts/postinstall.js"
   },
   "dependencies": {
     "opencode-ai": "^1.18.0"

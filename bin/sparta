@@ -1,83 +1,16 @@
 #!/usr/bin/env node
-import { spawn, execSync } from "node:child_process"
+import { spawn } from "node:child_process"
 import { resolve, dirname } from "node:path"
 import { fileURLToPath } from "node:url"
-import { existsSync, copyFileSync, mkdirSync } from "node:fs"
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
-const spartaRoot = resolve(__dirname, "..")
-const configDir = resolve(spartaRoot, ".opencode")
-const env = { ...process.env, OPENCODE_CONFIG_DIR: configDir }
+const root = resolve(__dirname, "..")
+const webLauncher = resolve(root, "bin", "sparta-web")
 
-function findEngine() {
-  const checked = new Set()
-
-  // add a candidate path
-  function add(p) {
-    const normalized = resolve(p)
-    if (!checked.has(normalized)) checked.add(normalized)
-  }
-
-  // 1. nested inside sparta-ai
-  add(resolve(spartaRoot, "node_modules", "opencode-ai"))
-
-  // 2. global npm root
-  try {
-    const globalRoot = execSync("npm root -g", { encoding: "utf8" }).trim()
-    add(resolve(globalRoot, "opencode-ai"))
-  } catch {}
-
-  // 3. common global locations
-  const envDirs = []
-  if (process.env.APPDATA) envDirs.push(resolve(process.env.APPDATA, "npm", "node_modules"))
-  if (process.env.LOCALAPPDATA) envDirs.push(resolve(process.env.LOCALAPPDATA, "npm", "node_modules"))
-  if (process.env.HOME) {
-    envDirs.push(resolve(process.env.HOME, ".npm", "node_modules"))
-    envDirs.push(resolve(process.env.HOME, ".local", "share", "npm", "node_modules"))
-  }
-  // npm prefix relative
-  const npmPrefix = process.env.npm_config_prefix || ""
-  if (npmPrefix) envDirs.push(resolve(npmPrefix, "node_modules"))
-
-  for (const d of envDirs) {
-    add(resolve(d, "opencode-ai"))
-  }
-
-  // try each candidate
-  for (const dir of checked) {
-    if (!existsSync(resolve(dir, "package.json"))) continue
-
-    // try direct binary
-    for (const binName of ["sparta.exe", "opencode.exe", "sparta", "opencode"]) {
-      const p = resolve(dir, "bin", binName)
-      if (existsSync(p)) return p
-    }
-
-    // platform binary (postinstall didn't run)
-    const platforms = ["opencode-windows-x64", "opencode-linux-x64", "opencode-linux-arm64", "opencode-darwin-x64", "opencode-darwin-arm64"]
-    for (const plat of platforms) {
-      const src = resolve(dir, "node_modules", plat, "bin", "opencode.exe")
-      if (existsSync(src)) {
-        const destDir = resolve(dir, "bin")
-        if (!existsSync(destDir)) mkdirSync(destDir, { recursive: true })
-        const dest = resolve(destDir, "opencode.exe")
-        try { copyFileSync(src, dest); return dest } catch {}
-      }
-    }
-  }
-  return null
-}
-
-const engineBin = findEngine()
-if (!engineBin) {
-  console.error("S.P.A.R.T.A engine not found.")
-  console.error("Reinstall: npm install -g github:Kenzioda/sparta-ai")
-  process.exit(1)
-}
-
-const proc = spawn(engineBin, process.argv.slice(2), { stdio: "inherit", env })
-proc.on("exit", (c) => process.exit(c ?? 1))
-proc.on("error", (err) => {
-  console.error("Failed to launch S.P.A.R.T.A:", err.message)
-  process.exit(1)
+// Launch web UI (no CLI)
+const proc = spawn(process.execPath, [webLauncher, ...process.argv.slice(2)], {
+  stdio: "ignore",
+  windowsHide: true,
+  detached: true,
 })
+proc.unref()

@@ -5,15 +5,15 @@
 ## Primary Installation(cross-platform)
 
 ```bash
-# Global 
+# Global
 npm install -g github:Kenzioda/sparta-ai
-sparta
+# S.P.A.R.T.A opens automatically in your browser
 ```
 
-### Web UI
+To launch again later:
 
 ```bash
-sparta-web
+sparta
 # Opens S.P.A.R.T.A Web UI at http://localhost:4096
 ```
 
