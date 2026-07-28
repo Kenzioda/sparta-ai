@@ -74,7 +74,7 @@ jobs:
           cp public/LICENSE "$PKG_DIR/" 2>/dev/null || true
 
           if [ "${{ matrix.ext }}" = "zip" ]; then
-            cd "$PKG_DIR" && 7z a "../sparta-${VERSION}-${{ matrix.target }}.zip" * && cd ..
+            cd "$PKG_DIR" && 7z a "../sparta-${VERSION}-${{ matrix.target }}.zip" . && cd ..
           else
             tar -czf "sparta-${VERSION}-${{ matrix.target }}.tar.gz" "$PKG_DIR"
           fi
