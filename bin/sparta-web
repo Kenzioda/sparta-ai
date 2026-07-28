@@ -1,7 +1,7 @@
 #!/usr/bin/env node
-import { spawn } from "node:child_process"
+import { spawn, execSync } from "node:child_process"
 import { createServer, request as httpRequest } from "node:http"
-import { readFileSync, existsSync, statSync } from "node:fs"
+import { readFileSync, existsSync, statSync, copyFileSync, mkdirSync } from "node:fs"
 import { resolve, dirname, extname } from "node:path"
 import { fileURLToPath } from "node:url"
 
@@ -21,57 +21,82 @@ const MIME = {
   ".woff2": "font/woff2",
 }
 
-// ─── start engine hidden ────────────────────────────────────
-const engine = spawn("opencode", ["serve", "--port", String(enginePort)], {
+// ─── Find engine binary (same logic as bin/sparta) ──────────
+function findEngine() {
+  const checked = new Set()
+  function add(p) { const n = resolve(p); if (!checked.has(n)) checked.add(n) }
+
+  add(resolve(spartaRoot, "node_modules", "opencode-ai"))
+  try { add(resolve(execSync("npm root -g", { encoding: "utf8" }).trim(), "opencode-ai")) } catch {}
+  if (process.env.APPDATA) add(resolve(process.env.APPDATA, "npm", "node_modules", "opencode-ai"))
+  if (process.env.LOCALAPPDATA) add(resolve(process.env.LOCALAPPDATA, "npm", "node_modules", "opencode-ai"))
+  if (process.env.HOME) {
+    add(resolve(process.env.HOME, ".npm", "node_modules", "opencode-ai"))
+    add(resolve(process.env.HOME, ".local", "share", "npm", "node_modules", "opencode-ai"))
+  }
+
+  for (const dir of checked) {
+    if (!existsSync(resolve(dir, "package.json"))) continue
+    for (const binName of ["sparta.exe", "opencode.exe", "sparta", "opencode"]) {
+      const p = resolve(dir, "bin", binName)
+      if (existsSync(p)) return p
+    }
+    const platforms = ["opencode-windows-x64", "opencode-linux-x64", "opencode-linux-arm64", "opencode-darwin-x64", "opencode-darwin-arm64"]
+    for (const plat of platforms) {
+      const src = resolve(dir, "node_modules", plat, "bin", "opencode.exe")
+      if (existsSync(src)) {
+        const destDir = resolve(dir, "bin")
+        if (!existsSync(destDir)) mkdirSync(destDir, { recursive: true })
+        const dest = resolve(destDir, "opencode.exe")
+        try { copyFileSync(src, dest); return dest } catch {}
+      }
+    }
+  }
+  return null
+}
+
+const engineBin = findEngine()
+if (!engineBin) {
+  console.error("S.P.A.R.T.A engine not found.")
+  console.error("Install: npm install -g opencode-ai")
+  process.exit(1)
+}
+
+// ─── Start engine hidden ────────────────────────────────────
+const engine = spawn(engineBin, ["serve", "--port", String(enginePort)], {
   stdio: "ignore",
   windowsHide: true,
   detached: true,
 })
 engine.unref()
 
-// cleanup on exit
 process.on("exit", () => { try { engine.kill() } catch {} })
 process.on("SIGINT", () => { try { engine.kill() } catch {}; process.exit(0) })
 process.on("SIGTERM", () => { try { engine.kill() } catch {}; process.exit(0) })
 
-// ─── serve static files + proxy to engine ───────────────────
+// ─── Serve static files + proxy API ─────────────────────────
 const server = createServer((req, res) => {
   const url = new URL(req.url, `http://${req.headers.host || "localhost"}`)
 
-  // Proxy API calls to engine
   if (url.pathname.startsWith("/api/")) {
     const opts = {
-      hostname: "127.0.0.1",
-      port: enginePort,
-      path: url.pathname + url.search,
-      method: req.method,
+      hostname: "127.0.0.1", port: enginePort,
+      path: url.pathname + url.search, method: req.method,
       headers: { ...req.headers, host: `127.0.0.1:${enginePort}` },
     }
     const proxyReq = httpRequest(opts, (proxyRes) => {
       res.writeHead(proxyRes.statusCode, proxyRes.headers)
       proxyRes.pipe(res)
     })
-    proxyReq.on("error", () => {
-      res.writeHead(502)
-      res.end("Engine unavailable")
-    })
-    if (req.method !== "GET" && req.method !== "HEAD") {
-      req.pipe(proxyReq)
-    } else {
-      proxyReq.end()
-    }
+    proxyReq.on("error", () => { res.writeHead(502); res.end("Engine unavailable") })
+    if (req.method !== "GET" && req.method !== "HEAD") req.pipe(proxyReq)
+    else proxyReq.end()
     return
   }
 
-  // Serve static files
   let filePath = url.pathname === "/" ? "/index.html" : url.pathname
   filePath = resolve(webRoot, filePath.replace(/^\//, "").replace(/\.\./g, ""))
-
-  if (!existsSync(filePath)) {
-    // fallback to index.html for SPA routing
-    filePath = resolve(webRoot, "index.html")
-  }
-
+  if (!existsSync(filePath)) filePath = resolve(webRoot, "index.html")
   try {
     const ext = extname(filePath)
     const stat = statSync(filePath)
@@ -81,17 +106,12 @@ const server = createServer((req, res) => {
       "Cache-Control": ext === ".html" ? "no-cache" : "max-age=86400",
     })
     res.end(readFileSync(filePath))
-  } catch {
-    res.writeHead(404)
-    res.end("Not found")
-  }
+  } catch { res.writeHead(404); res.end("Not found") }
 })
 
 server.listen(port, () => {
   const url = `http://localhost:${port}`
   console.log(`S.P.A.R.T.A Web UI: ${url}`)
-  const start =
-    process.platform === "win32" ? "start" :
-    process.platform === "darwin" ? "open" : "xdg-open"
+  const start = process.platform === "win32" ? "start" : process.platform === "darwin" ? "open" : "xdg-open"
   spawn(start, [url], { stdio: "ignore", detached: true, windowsHide: true }).unref()
 })
