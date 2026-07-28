@@ -5,98 +5,35 @@ on:
   workflow_dispatch:
 
 jobs:
-  build:
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - os: ubuntu-latest
-            target: linux-x64
-            ext: tar.gz
-          - os: ubuntu-latest
-            target: linux-arm64
-            ext: tar.gz
-          - os: macos-latest
-            target: darwin-x64
-            ext: tar.gz
-          - os: macos-latest
-            target: darwin-arm64
-            ext: tar.gz
-          - os: windows-latest
-            target: win32-x64
-            ext: zip
-    runs-on: ${{ matrix.os }}
+  release:
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
     steps:
-      - name: Checkout private repo (engine source)
+      - name: Checkout
         uses: actions/checkout@v4
-        with:
-          path: engine
 
-      - name: Setup Bun
-        uses: oven-sh/setup-bun@v2
-        with:
-          bun-version: 1.3.14
-
-      - name: Install engine dependencies
-        working-directory: engine/src
-        run: bun install
-
-      - name: Build engine binary
-        working-directory: engine/src/packages/opencode
-        run: bun run script/build.ts --single --skip-install --skip-embed-web-ui 2>&1
-
-      - name: Checkout public repo (config & installer scripts)
-        uses: actions/checkout@v4
-        with:
-          repository: Kenzioda/sparta-ai
-          token: ${{ secrets.PUBLIC_REPO_TOKEN }}
-          path: public
-
-      - name: Package binary with Sparta config
-        shell: bash
-        run: |
-          VERSION="${GITHUB_REF_NAME#v}"
-          PKG_DIR="sparta-${VERSION}"
-          mkdir -p "$PKG_DIR/.opencode/agent" "$PKG_DIR/themes/tui" "$PKG_DIR/themes/ui" "$PKG_DIR/skills" "$PKG_DIR/specs" "$PKG_DIR/scripts"
-
-          if [ "${{ matrix.os }}" = "windows-latest" ]; then
-            cp engine/src/packages/opencode/dist/*/bin/opencode.exe "$PKG_DIR/sparta.exe" 2>/dev/null || cp engine/src/packages/opencode/dist/opencode-${{ matrix.target }}/bin/opencode.exe "$PKG_DIR/sparta.exe"
-          else
-            cp engine/src/packages/opencode/dist/*/bin/opencode "$PKG_DIR/sparta" 2>/dev/null || cp engine/src/packages/opencode/dist/opencode-${{ matrix.target }}/bin/opencode "$PKG_DIR/sparta"
-          fi
-
-          cp -r public/.opencode/* "$PKG_DIR/.opencode/"
-          cp -r public/themes/* "$PKG_DIR/themes/"
-          cp -r public/skills/* "$PKG_DIR/skills/"
-          cp -r public/specs/* "$PKG_DIR/specs/"
-          cp -r public/scripts/* "$PKG_DIR/scripts/"
-          cp public/README.md "$PKG_DIR/" 2>/dev/null || true
-          cp public/LICENSE "$PKG_DIR/" 2>/dev/null || true
-
-          if [ "${{ matrix.ext }}" = "zip" ]; then
-            cd "$PKG_DIR" && 7z a "../sparta-${VERSION}-${{ matrix.target }}.zip" . && cd ..
-          else
-            tar -czf "sparta-${VERSION}-${{ matrix.target }}.tar.gz" "$PKG_DIR"
-          fi
-
-      - name: Create installer (Windows)
-        if: matrix.os == 'windows-latest'
-        shell: pwsh
-        run: |
-          $VERSION = "$env:GITHUB_REF_NAME" -replace '^v',''
-          & public/scripts/installer-win.ps1 -Version $VERSION -BinaryPath "sparta-${VERSION}/sparta.exe"
-
-      - name: Publish release
-        if: startsWith(github.ref, 'refs/tags/v')
-        shell: bash
+      - name: Package & Publish
         env:
           GH_TOKEN: ${{ secrets.PUBLIC_REPO_TOKEN }}
         run: |
           VERSION="${GITHUB_REF_NAME#v}"
+          for plat in win32-x64 darwin-x64 darwin-arm64 linux-x64 linux-arm64; do
+            PKG_DIR="sparta-${VERSION}"
+            mkdir -p "$PKG_DIR"
+            cp -r .opencode "$PKG_DIR/"
+            cp -r themes "$PKG_DIR/" 2>/dev/null || true
+            cp -r skills "$PKG_DIR/" 2>/dev/null || true
+            cp -r specs "$PKG_DIR/" 2>/dev/null || true
+            cp scripts/install.ps1 "$PKG_DIR/"
+            cp scripts/install.sh "$PKG_DIR/"
+            cp README.md LICENSE "$PKG_DIR/" 2>/dev/null || true
+            tar -czf "sparta-${VERSION}-${plat}.tar.gz" "$PKG_DIR"
+            rm -rf "$PKG_DIR"
+          done
+
           gh release create "v$VERSION" \
             --repo Kenzioda/sparta-ai \
             --title "S.P.A.R.T.A v$VERSION" \
-            --notes "See https://github.com/Kenzioda/sparta-ai/releases" \
             --generate-notes || true
-          gh release upload "v$VERSION" sparta-*.${{ matrix.ext }} \
+          gh release upload "v$VERSION" sparta-*.tar.gz \
             --repo Kenzioda/sparta-ai --clobber
