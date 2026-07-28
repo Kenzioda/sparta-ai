@@ -6,17 +6,16 @@ A hierarchical multi-agent system built on top of the opencode framework, with t
 
 ## Install
 
-### Option 1: Download archive (standalone — no install required)
+### Option 1: Quick install (recommended)
 
 | Platform | Download |
 |---|---|
-| Windows | [sparta-1.0.0-win32-x64.zip](https://github.com/Kenzioda/sparta-ai/releases/tag/v1.0.0) |
-| macOS (Intel) | [sparta-1.0.0-darwin-x64.tar.gz](https://github.com/Kenzioda/sparta-ai/releases/tag/v1.0.0) |
-| macOS (Apple Silicon) | [sparta-1.0.0-darwin-arm64.tar.gz](https://github.com/Kenzioda/sparta-ai/releases/tag/v1.0.0) |
-| Linux (x64) | [sparta-1.0.0-linux-x64.tar.gz](https://github.com/Kenzioda/sparta-ai/releases/tag/v1.0.0) |
-| Linux (ARM64) | [sparta-1.0.0-linux-arm64.tar.gz](https://github.com/Kenzioda/sparta-ai/releases/tag/v1.0.0) |
+| Windows | [sparta-1.0.0-win32-x64.tar.gz](https://github.com/Kenzioda/sparta-ai/releases/tag/v1.0.0) |
+| macOS / Linux | [sparta-1.0.0-linux-x64.tar.gz](https://github.com/Kenzioda/sparta-ai/releases/tag/v1.0.0) |
 
-**Usage:** Download, extract, then run `sparta.exe` (Windows) or `./sparta` (Mac/Linux) from the extracted folder.
+**Usage:** Download, extract, then double-click `install.ps1` (Windows) or run `bash install.sh` (Mac/Linux). The script auto-installs Node.js + Bun + the opencode engine, copies the Sparta config, and creates a desktop shortcut.
+
+After install, just type `sparta` in your terminal or double-click the desktop icon.
 
 ### Option 2: Via npm (requires Node.js 18+)
 
