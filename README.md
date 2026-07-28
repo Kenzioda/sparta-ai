@@ -2,25 +2,23 @@
 
 **Super Personal Assistant for Real-time Tactical & Autonomous**
 
-A hierarchical multi-agent system built on top of the opencode framework, with tactical command structure, domain-expert skills database, and safety-governed deployment.
-
 ## Install
 
-### Option 1: Quick install (recommended)
+```bash
+npm install -g github:Kenzioda/sparta-ai
+sparta
+```
 
-| Platform | Download |
-|---|---|
-| Windows | [sparta-1.0.0-win32-x64.tar.gz](https://github.com/Kenzioda/sparta-ai/releases/tag/v1.0.0) |
-| macOS / Linux | [sparta-1.0.0-linux-x64.tar.gz](https://github.com/Kenzioda/sparta-ai/releases/tag/v1.0.0) |
-
-**Usage:** Download, extract, then double-click `install.ps1` (Windows) or run `bash install.sh` (Mac/Linux). The script auto-installs Node.js + Bun + the opencode engine, copies the Sparta config, and creates a desktop shortcut.
-
-After install, just type `sparta` in your terminal or double-click the desktop icon.
-
-### Option 2: Via npm (requires Node.js 18+)
+### One-liner
 
 ```bash
-npm install -g opencode sparta-ai
+curl -fsSL https://raw.githubusercontent.com/Kenzioda/sparta-ai/main/scripts/install.sh | bash
+sparta
+```
+
+```powershell
+# Windows
+irm https://raw.githubusercontent.com/Kenzioda/sparta-ai/main/scripts/install.ps1 | iex
 sparta
 ```
 

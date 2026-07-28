@@ -14,17 +14,14 @@
     "themes/",
     "skills/",
     "specs/",
-    "scripts/",
     "README.md",
-    "Manual-Instructions.txt",
-    "Sparta-Blueprint.txt",
     "LICENSE"
   ],
   "scripts": {
     "postinstall": "echo 'S.P.A.R.T.A installed. Run: sparta'"
   },
-  "peerDependencies": {
-    "opencode": "^1.18.0"
+  "dependencies": {
+    "opencode-ai": "^1.18.0"
   },
   "repository": {
     "type": "git",

@@ -2,47 +2,28 @@
 import { spawn } from "node:child_process"
 import { resolve, dirname } from "node:path"
 import { fileURLToPath } from "node:url"
-import { existsSync } from "node:fs"
+import { createRequire } from "node:module"
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 const spartaRoot = resolve(__dirname, "..")
 const configDir = resolve(spartaRoot, ".opencode")
 const env = { ...process.env, OPENCODE_CONFIG_DIR: configDir }
 
-// Try direct binary next to this wrapper (installed via .exe installer)
-const localBin = resolve(spartaRoot, "sparta.exe")
-if (existsSync(localBin)) {
-  const proc = spawn(localBin, process.argv.slice(2), { stdio: "inherit", env })
-  proc.on("exit", (c) => process.exit(c ?? 1))
-  return
-}
-
-// Try to resolve opencode engine via npm / node_modules
-import { createRequire } from "node:module"
 const require = createRequire(import.meta.url)
 
-let engineBin
 try {
-  const enginePkg = require.resolve("opencode/package.json")
-  engineBin = resolve(dirname(enginePkg), "bin", "opencode")
-} catch {
-  try {
-    const enginePkg = require.resolve("sparta/package.json")
-    engineBin = resolve(dirname(enginePkg), "bin", "opencode")
-  } catch {
-    console.error("S.P.A.R.T.A requires the opencode engine.")
-    console.error("Install: npm install -g opencode")
-    console.error("Or download an installer from: https://github.com/Kenzioda/sparta-ai/releases")
+  const enginePkg = require.resolve("opencode-ai/package.json")
+  const engineDir = dirname(enginePkg)
+  const engineBin = resolve(engineDir, "bin", "opencode.exe")
+  const proc = spawn(engineBin, process.argv.slice(2), { stdio: "inherit", env })
+  proc.on("exit", (c) => process.exit(c ?? 1))
+  proc.on("error", (err) => {
+    console.error("Failed to launch S.P.A.R.T.A:", err.message)
     process.exit(1)
-  }
-}
-
-const proc = spawn(process.execPath, [engineBin, ...process.argv.slice(2)], {
-  stdio: "inherit",
-  env,
-})
-proc.on("exit", (c) => process.exit(c ?? 1))
-proc.on("error", (err) => {
-  console.error("Failed to launch S.P.A.R.T.A:", err.message)
+  })
+} catch {
+  console.error("S.P.A.R.T.A requires the opencode engine.")
+  console.error("Install: npm install -g opencode-ai")
+  console.error("Then run: sparta")
   process.exit(1)
-})
+}
