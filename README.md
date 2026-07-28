@@ -6,29 +6,17 @@ A hierarchical multi-agent system built on top of the opencode framework, with t
 
 ## Install
 
-### Option 1: Installer (recommended — fully standalone)
+### Option 1: Download archive (standalone — no install required)
 
 | Platform | Download |
-|---|---|---|
+|---|---|
 | Windows | [sparta-1.0.0-win32-x64.zip](https://github.com/Kenzioda/sparta-ai/releases/tag/v1.0.0) |
 | macOS (Intel) | [sparta-1.0.0-darwin-x64.tar.gz](https://github.com/Kenzioda/sparta-ai/releases/tag/v1.0.0) |
 | macOS (Apple Silicon) | [sparta-1.0.0-darwin-arm64.tar.gz](https://github.com/Kenzioda/sparta-ai/releases/tag/v1.0.0) |
 | Linux (x64) | [sparta-1.0.0-linux-x64.tar.gz](https://github.com/Kenzioda/sparta-ai/releases/tag/v1.0.0) |
 | Linux (ARM64) | [sparta-1.0.0-linux-arm64.tar.gz](https://github.com/Kenzioda/sparta-ai/releases/tag/v1.0.0) |
 
-Or run the web installer:
-
-```powershell
-# Windows (PowerShell)
-irm https://sparta.ai/install.ps1 | iex
-```
-
-```bash
-# macOS / Linux
-curl -fsSL https://sparta.ai/install.sh | bash
-```
-
-After install, just type `sparta` in your terminal or double-click the desktop icon.
+**Usage:** Download, extract, then run `sparta.exe` (Windows) or `./sparta` (Mac/Linux) from the extracted folder.
 
 ### Option 2: Via npm (requires Node.js 18+)
 
