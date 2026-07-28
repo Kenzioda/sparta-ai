@@ -23,7 +23,7 @@
   "scripts": {
     "postinstall": "node ./scripts/postinstall.js"
   },
-  "dependencies": {
+  "peerDependencies": {
     "opencode-ai": "^1.18.0"
   },
   "repository": {
