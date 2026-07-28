@@ -9,12 +9,12 @@ A hierarchical multi-agent system built on top of the opencode framework, with t
 ### Option 1: Installer (recommended — fully standalone)
 
 | Platform | Download |
-|---|---|
-| Windows | [sparta-latest-win-x64-installer.exe](https://github.com/Kenzioda/sparta-ai/releases/latest) |
-| macOS (Intel) | [sparta-latest-mac-x64.tar.gz](https://github.com/Kenzioda/sparta-ai/releases/latest) |
-| macOS (Apple Silicon) | [sparta-latest-mac-arm64.tar.gz](https://github.com/Kenzioda/sparta-ai/releases/latest) |
-| Linux (x64) | [sparta-latest-linux-x64.tar.gz](https://github.com/Kenzioda/sparta-ai/releases/latest) |
-| Linux (ARM64) | [sparta-latest-linux-arm64.tar.gz](https://github.com/Kenzioda/sparta-ai/releases/latest) |
+|---|---|---|
+| Windows | [sparta-1.0.0-win32-x64.zip](https://github.com/Kenzioda/sparta-ai/releases/tag/v1.0.0) |
+| macOS (Intel) | [sparta-1.0.0-darwin-x64.tar.gz](https://github.com/Kenzioda/sparta-ai/releases/tag/v1.0.0) |
+| macOS (Apple Silicon) | [sparta-1.0.0-darwin-arm64.tar.gz](https://github.com/Kenzioda/sparta-ai/releases/tag/v1.0.0) |
+| Linux (x64) | [sparta-1.0.0-linux-x64.tar.gz](https://github.com/Kenzioda/sparta-ai/releases/tag/v1.0.0) |
+| Linux (ARM64) | [sparta-1.0.0-linux-arm64.tar.gz](https://github.com/Kenzioda/sparta-ai/releases/tag/v1.0.0) |
 
 Or run the web installer:
 
