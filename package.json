@@ -1,7 +1,7 @@
 {
   "$schema": "https://json.schemastore.org/package.json",
   "name": "sparta-ai",
-  "description": "S.P.A.R.T.A — Super Personal Assistant for Real-time Tactical & Autonomous. AI agent configuration and extensions for opencode.",
+  "description": "S.P.A.R.T.A — Super Personal Assistant for Real-time Tactical & Autonomous.",
   "version": "1.0.0",
   "private": false,
   "type": "module",
