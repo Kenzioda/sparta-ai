@@ -65,6 +65,6 @@ MIT
 
 ## Special Thanks
 
-opencode - https://github.com/anomalyco/opencode
-camofox - https://github.com/jo-inc/camofox-browser
-activepieces - https://github.com/activepieces/activepieces
+- **OpenCode** — https://github.com/anomalyco/opencode
+- **Camofox** — https://github.com/jo-inc/camofox-browser
+- **Activepieces** — https://github.com/activepieces/activepieces
