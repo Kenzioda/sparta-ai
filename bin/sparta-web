@@ -68,6 +68,7 @@ const engine = spawn(engineBin, ["serve", "--port", String(enginePort)], {
   windowsHide: true,
   detached: true,
 })
+engine.on("error", () => {})
 engine.unref()
 
 process.on("exit", () => { try { engine.kill() } catch {} })
@@ -112,8 +113,8 @@ const server = createServer((req, res) => {
 server.listen(port, () => {
   const url = `http://localhost:${port}`
   console.log(`S.P.A.R.T.A Web UI: ${url}`)
-  try {
-    const start = process.platform === "win32" ? "start" : process.platform === "darwin" ? "open" : "xdg-open"
-    spawn(start, [url], { stdio: "ignore", detached: true, windowsHide: true }).unref()
-  } catch {}
+  const start = process.platform === "win32" ? "start" : process.platform === "darwin" ? "open" : "xdg-open"
+  const child = spawn(start, [url], { stdio: "ignore", detached: true, windowsHide: true })
+  child.on("error", () => {})
+  child.unref()
 })
