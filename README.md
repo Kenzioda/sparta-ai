@@ -36,7 +36,7 @@ sparta
 ## Repository Structure
 
 ```
-.opencode/          — Agent definition, model tiering, config
+.opencode/          — Agent definition and configuration
 themes/             — TUI and desktop UI themes
 skills/             — Skills overview
 specs/storage/      — Full identity spec and skills database
@@ -47,9 +47,3 @@ bin/sparta          — CLI wrapper for npm installation
 ## License
 
 MIT
-
-## Special Thanks
-
-- **OpenCode** — https://github.com/anomalyco/opencode
-- **Camofox** — https://github.com/jo-inc/camofox-browser
-- **Activepieces** — https://github.com/activepieces/activepieces

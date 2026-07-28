@@ -10,20 +10,28 @@ const configDir = resolve(spartaRoot, ".opencode")
 const env = { ...process.env, OPENCODE_CONFIG_DIR: configDir }
 
 const require = createRequire(import.meta.url)
+const engineNames = ["sparta", "opencode-ai"]
+let engineBin
 
-try {
-  const enginePkg = require.resolve("opencode-ai/package.json")
-  const engineDir = dirname(enginePkg)
-  const engineBin = resolve(engineDir, "bin", "opencode.exe")
-  const proc = spawn(engineBin, process.argv.slice(2), { stdio: "inherit", env })
-  proc.on("exit", (c) => process.exit(c ?? 1))
-  proc.on("error", (err) => {
-    console.error("Failed to launch S.P.A.R.T.A:", err.message)
-    process.exit(1)
-  })
-} catch {
-  console.error("S.P.A.R.T.A requires the opencode engine.")
-  console.error("Install: npm install -g opencode-ai")
-  console.error("Then run: sparta")
+for (const name of engineNames) {
+  try {
+    const pkg = require.resolve(`${name}/package.json`)
+    engineBin = resolve(dirname(pkg), "bin", "sparta.exe")
+    if (engineBin) break
+    engineBin = resolve(dirname(pkg), "bin", "opencode.exe")
+    if (engineBin) break
+  } catch {}
+}
+
+if (!engineBin) {
+  console.error("S.P.A.R.T.A engine not found.")
+  console.error("Reinstall: npm install -g github:Kenzioda/sparta-ai")
   process.exit(1)
 }
+
+const proc = spawn(engineBin, process.argv.slice(2), { stdio: "inherit", env })
+proc.on("exit", (c) => process.exit(c ?? 1))
+proc.on("error", (err) => {
+  console.error("Failed to launch S.P.A.R.T.A:", err.message)
+  process.exit(1)
+})
