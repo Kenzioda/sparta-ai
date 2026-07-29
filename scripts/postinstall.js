@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-import { spawn, execSync } from "node:child_process"
+import { spawn } from "node:child_process"
 import { resolve, dirname } from "node:path"
 import { fileURLToPath } from "node:url"
 import { existsSync, writeFileSync } from "node:fs"
@@ -7,19 +7,6 @@ import { existsSync, writeFileSync } from "node:fs"
 const __dirname = dirname(fileURLToPath(import.meta.url))
 const root = resolve(__dirname, "..")
 const launcher = resolve(root, "bin", "sparta-web")
-
-// ─── Ensure opencode-ai engine is installed ─────────────────
-try {
-  execSync("opencode --version", { stdio: "ignore" })
-} catch {
-  try {
-    execSync("npm install -g opencode-ai", { stdio: "ignore", timeout: 120000 })
-  } catch {
-    try {
-      execSync("bun install -g opencode-ai", { stdio: "ignore", timeout: 120000 })
-    } catch {}
-  }
-}
 
 // ─── Desktop Shortcut ───────────────────────────────────────
 function createShortcut() {
@@ -30,9 +17,7 @@ function createShortcut() {
     } catch {}
   } else {
     const f = resolve(process.env.HOME || "/tmp", process.platform === "darwin" ? "Applications/S.P.A.R.T.A.app" : ".local/share/applications/sparta.desktop")
-    try {
-      writeFileSync(f, `[Desktop Entry]\nName=S.P.A.R.T.A\nExec=${launcher}\nIcon=terminal\nType=Application\nCategories=Utility;\nTerminal=false\n`)
-    } catch {}
+    try { writeFileSync(f, `[Desktop Entry]\nName=S.P.A.R.T.A\nExec=${launcher}\nIcon=terminal\nType=Application\nCategories=Utility;\nTerminal=false\n`) } catch {}
   }
 }
 createShortcut()
