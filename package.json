@@ -23,9 +23,7 @@
   "scripts": {
     "postinstall": "node ./scripts/postinstall.js"
   },
-  "peerDependencies": {
-    "opencode-ai": "^1.18.0"
-  },
+
   "repository": {
     "type": "git",
     "url": "https://github.com/Kenzioda/sparta-ai"
